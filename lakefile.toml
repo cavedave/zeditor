@@ -1,5 +1,9 @@
 name = "zeditor"
-defaultTargets = ["ZEditor"]
+defaultTargets = ["ZEditor", "zeditor"]
 
 [[lean_lib]]
 name = "ZEditor"
+
+[[lean_exe]]
+name = "zeditor"
+root = "Main"

@@ -13,9 +13,9 @@ For each finding the Lean development currently uses the reading shown in "Readi
 
 | # | § | Finding | Severity | Lean evidence | C behaviour | Reading used | Decision |
 |---|---|---|---|---|---|---|---|
-| 1 | 1.2 | `Line ≙ seq (Char − {nl})` excludes the newline lines the book's own examples use; line views then don't exist (or aren't unique) | ill-formed | `printed_lines_have_no_nl`, `printed_lines_not_unique` | n/a | `seq₁ (Char − {nl}) ∪ {⟨nl⟩}` | open |
-| 2 | 1.2 | `DocWordSeq` uses `rng w = S` where `⊆` is meant; word views not unique | ill-formed | (comment in `DocWordSeq`) | n/a | `⊆` | open |
-| 3 | 1.6 | Word and line moves are not total: inside a word or line there is no outcome at all | stuck | `leftMoveWord_Doc1_stuck` | moves (`LeftMoveWord_Doc1`) | C reading (`MvWordC`, `MvLineC`), content kept as characters | open |
+| 1 | 1.2 | `Line ≙ seq (Char − {nl})` excludes the newline lines the book's own examples use; line views then don't exist (or aren't unique) | ill-formed | `printed_lines_have_no_nl`, `printed_lines_not_unique` | n/a | `seq₁ (Char − {nl}) ∪ {⟨nl⟩}` | **Fixed** to the intended definition ([D1](#d1-what-a-line-is)) |
+| 2 | 1.2 | `DocWordSeq` uses `rng w = NonWhiteSpace` where `⊆` is meant: the rule never applies, so word views are not unique and Corollary 3:1.2a fails | ill-formed | (comment in `DocWordSeq`) | n/a | `⊆` | **Fixed**: read `=` as `⊆` ([D2](#d2-telling-words-apart)) |
+| 3 | 1.6 | Word and line moves are not total: inside a word or line there is no outcome at all | stuck | `leftMoveWord_Doc1_stuck` | moves (`LeftMoveWord_Doc1`) | C reading (`MvWordC`, `MvLineC`), content kept as characters | **Fixed** ⚠ follows the C ([D3](#d3-moving-by-a-word-or-a-line)) |
 | 4a | 3.3 | `RemTrailWS` is declared on `ΔUD` but uses `Left_Char`/`Right_Char` | ill-formed | (definition on `ΔDoc2`) | n/a | `ΔDoc2` | open |
 | 4b | 3.1 | `visibleseq` uses `last L` on a possibly empty sequence | ill-formed | (comment in `visibleseq`) | n/a | empty sequence is a visibleseq, as the prose says | open |
 | 4c | 3.1 | The empty-line invariant allows one invisible empty line at the end of the document, contrary to its stated purpose | weak | `Check.lean` | removes it | as printed | open |
@@ -45,6 +45,122 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 9b | 8.2.1 | `HalfWinHeight = WinHeight/2` is said to be at least 1, but is 0 for a one-line window; Centre Window then has no outcome | stuck (edge case) | `centreWindow_height_one`; total for `WinHeight ≥ 2` (`CentreWindow_Doc9_total`) | n/a | as printed | open |
 | 9c | 8.2.2 | "We thus discharge PO 1 for each Doc8 operation": the window policy is total (proved), but this only carries totality up from Doc8, where it already fails for findings 3, 5, 6, 7 and 8 | minor | `WindowPolicy_total`, `promote9_total` | n/a | n/a | open |
 
+## Decisions
+
+How each decision was reached, with the evidence from the scan.
+
+**Policy when following the C.** Where the printed specification gives no usable answer, and the C program printed in the same monograph shows what the author intended, we follow the C. Every such decision is marked **⚠ follows the C** in the table above and carries a warning at the top of its section. The warning says what we changed, why the printed specification cannot be used as it stands, and that the result is our reading of the author's intent rather than his text. Anyone who prefers the printed text can find both versions in the Lean code: the printed one under its original name, the C's version with a `C` suffix (for example `MvWord` and `MvWordC`).
+
+### D1. What a line is
+
+*Finding 1. Decided 2026-10-30: fix to the intended definition.*
+
+**What the monograph says.** §1.2 (printed p.55, PDF p.58) defines
+
+    Line ≙ seq (Char − {nl})
+
+that is, a line is any sequence of characters that contains no newline (`nl`), including the empty sequence.
+
+![The definitions of Word and Line, printed p.55](docs/eyecheck/p58_1_Line_definition.png)
+
+**Why it is contradictory.** Two pages later (printed p.57, PDF p.60) the monograph gives its own example of the line view of a document. It takes the characters
+
+![The example character sequence, printed p.57](docs/eyecheck/p60_1_example_chars.png)
+
+that is, "the⏎canary⏎⏎ate", and splits them into the lines
+
+    ⟨⟨t,h,e⟩, ⟨nl⟩, ⟨c,a,n,a,r,y⟩, ⟨nl⟩, ⟨nl⟩, ⟨a,t,e⟩⟩
+
+in which every newline is a line of its own. By the definition on p.55, `⟨nl⟩` is not a line, so this example is not a line view. The very next definition, `DocLineSeq`, also tests whether a line equals `⟨nl⟩`, which no line could. The definition and the way it is used contradict each other. Taken literally:
+
+- a document containing any newline has no line view at all, so moving or deleting by line is undefined for every multi-line document (`printed_lines_have_no_nl`);
+- because empty lines are allowed, even the empty document has two different line views, `⟨⟩` and `⟨⟨⟩⟩`, so the function `FL` that the monograph declares one-to-one is not (`printed_lines_not_unique`), and Corollary 3:1.2c is false.
+
+**What was intended.** The example, `DocLineSeq`, the lemmas of §1.2.2 and the C (`LeftMoveLine_Doc1` moves over a single newline, or back to the start of the line) all treat a line as *either a non-empty run of characters other than newline, or a single newline on its own*.
+
+**Decision.** Use the intended definition:
+
+    Line ≙ seq₁ (Char − {nl}) ∪ {⟨nl⟩}
+
+This is `IsLine` in `ZEditor/Spec/Doc1.lean`. With it, every document has exactly one line view (proved: `lines_ok`, `DocLineSeq.unique`, `FL_lines`).
+
+### D2. Telling words apart
+
+*Finding 2. Decided 2026-10-30: read `=` as `⊆` (subset).*
+
+**What the monograph says.** The box defining `DocWordSeq` (printed p.56, PDF p.59) says that in a valid word view no two adjacent words `w1`, `w2` are of the same kind:
+
+![The DocWordSeq box, printed p.56](docs/eyecheck/p59_2_DocWordSeq.png)
+
+    rng (w1) = WhiteSpace     ⇒  rng (w2) ≠ WhiteSpace
+    rng (w1) = NonWhiteSpace  ⇒  rng (w2) ≠ NonWhiteSpace
+
+`rng w` is the set of characters occurring in the word `w`. `WhiteSpace` is `{sp}`; `NonWhiteSpace` is every character except space and newline.
+
+**Why it does not work as printed.** The symbol really is a plain `=` (confirmed by eye); the problem is its meaning, not its printing. The first line is fine: a word of spaces has exactly `{sp}` as its set of characters. The second line never applies: `rng (w1) = NonWhiteSpace` would need the word to contain *every* character other than space and newline, which no word does. So nothing forbids two non-space words next to each other, and "cat" has several word views, for example `⟨⟨c,a,t⟩⟩` and `⟨⟨c,a⟩,⟨t⟩⟩`. The corollary printed immediately below the box (Corollary 3:1.2a, "as a direct consequence of this definition … the sequences themselves are equal") is then false.
+
+**Could we be wrong?** Possibly the author used `=` loosely, meaning "the word's characters are all of this kind"; written mathematics often does. That is exactly the `⊆` reading we adopt, so the question is only whether to call this an error in the text or an informal use of `=`. Taken strictly, as Z defines `=`, it is an error: the monograph's own corollary needs `⊆`. Read as `⊆`, the first line means the same as printed (a non-empty word whose characters are drawn from `{sp}` has exactly `{sp}`), and the second line gains the meaning the corollary needs. No other reading we can find makes the corollary true.
+
+**Decision.** Read both lines with `⊆`:
+
+    rng (w1) ⊆ WhiteSpace     ⇒  ¬ (rng (w2) ⊆ WhiteSpace)
+    rng (w1) ⊆ NonWhiteSpace  ⇒  ¬ (rng (w2) ⊆ NonWhiteSpace)
+
+This is `DocWordSeq` in `ZEditor/Spec/Doc1.lean`. With it, every document has exactly one word view (proved: `words_ok`, `DocWordSeq.unique`, `FW_words`), which is Corollary 3:1.2a.
+
+### D3. Moving by a word or a line
+
+*Finding 3. Decided 2026-10-30: adopt the C's behaviour. A move keeps the text unchanged as characters, not as words or lines.*
+
+> **⚠ This decision follows the C, not the printed specification.**
+>
+> As printed, moving left or right by a word or a line has **no result** whenever the cursor is inside a word or a line. The specification gives neither a move nor an error, so it does not say what the editor should do. We have made the editor do what the C program in the same monograph does: move to the start (or end) of the word or line. We believe this is what the author intended (he defines the necessary rule himself, in §1.3, but does not use it here). It is nevertheless our reading, not his text. The printed operations are kept in the Lean code as `MvWord` and `MvLine`, next to the versions we use, `MvWordC` and `MvLineC`.
+
+**What the monograph says.** §1.1.1 (printed p.54, PDF p.57) defines one generic move, `Mv[X]`. It works on a pair `Left`, `Right` of sequences of `X`: "*Left* must not be empty, its last element being moved to the beginning of *Right*". The text is kept unchanged by `Ξ_Cont`, "a before- and after-document whose content hasn't changed (i.e. it allows for a change of current position)", defined as `Left ⁀ Right = Left′ ⁀ Right′`:
+
+![Ξ_Cont and the generic move Mv, printed p.54](docs/eyecheck/p57_3_XiCont_and_Mv.png)
+
+§1.2.1 (printed p.58, PDF p.61) then uses the same move for characters, words and lines: `Mv_Word ≙ Mv[DocWordSeq]`, `Mv_Line ≙ Mv[DocLineSeq]`. Its expansion of `Mv_Line` shows what that means: `Left`, `Right`, `Left′` and `Right′` must all be valid line sequences, and the content is kept unchanged *as a sequence of lines*:
+
+![Mv for words and lines, and the expanded Mv_Line, printed p.58](docs/eyecheck/p61_3_MvWord_MvLine.png)
+
+§1.6, "The Total Operations On The Doc1 State", then defines, for example, `LeftMoveWord_Doc1 ≙ (LeftMvWord ∧ Success) ∨ ErrorTopOfDoc`. "Total" means the operation always has an outcome. Its expansion for lines (printed p.68, PDF p.71):
+
+![LeftMoveLine_Doc1 expanded, printed p.68](docs/eyecheck/p71_3_LeftMoveLine_Doc1.png)
+
+**Why it gets stuck: an example.** Take the document "cat" with the cursor between `a` and `t`: "ca|t".
+
+- Seen as words, the cursor splits the word: `Left` is the one word "ca", and `Right` is the one word "t".
+- Move left by a word: the last word of `Left`, "ca", moves to the front of `Right`, so `Right′` would be the two words "ca", "t".
+- But two letter-words side by side are not a valid word sequence. That is exactly what the word rule forbids (see D2), and `Right′` must be valid. So there is no allowed result.
+- The error case, `ErrorTopOfDoc`, applies only when the cursor is at the top of the document, and here it is not.
+
+So the operation has **no outcome at all**: not a move, not an error message. The same happens for lines: in "ab|c", moving left by a line would make `Right′` the two text lines "ab", "c" with no newline between them, which `DocLineSeq` forbids. This happens whenever the cursor is inside a word or a line, which is most of the time. Lean proves it for "ca|t" (`leftMoveWord_Doc1_stuck`).
+
+**What the C does.** `LeftMoveWord_Doc1` (Appendix C, p.ii) moves the cursor back over a newline, a run of spaces, or the rest of the word, and always succeeds unless the cursor is at the top:
+
+```c
+int LeftMoveWord_Doc1()
+{
+ if (CP!=0) { if       (GetArrCont(CP)==nl) { CP--; }
+              else if (GetArrCont(CP)==sp) { LMWSWord(); }
+              else                         { LMNWSWord(); }
+              return(OK);
+            }
+ else       { return(Top); }
+}
+```
+
+From "ca|t" it moves to "|cat". `LeftMoveLine_Doc1` does the same for lines.
+
+**What was intended.** The move should keep the text unchanged *as characters*, and the word and line views on each side are then recomputed from the characters. In the example, "ca" joins "t" and becomes the word "cat". The monograph defines exactly this in §1.3 as `Ξ_Cont Doc1 ≙ Ξ_Cont Pair[Char] ∧ ΔDoc1`, but does not use it for the moves.
+
+**Could we be wrong?**
+- For words, the problem only appears once the word rule works as intended (D2). With the printed `=` (finding 2), "ca" next to "t" would be allowed and the move would succeed, so one could argue that the two errors cancel out. They do not fully. With the printed rule a document's word view is not unique, so the monograph's Corollary 3:1.2a fails. And nothing rescues lines: the line rule `DocLineSeq` is printed correctly, and forbids two text lines side by side under either definition of a line (D1).
+- Perhaps the author meant word and line moves to be used only at word or line boundaries. But nothing in the specification restricts the cursor in that way. Character moves put it inside words, and §1.6 calls these operations total. The C moves from anywhere.
+
+**Decision.** Use the C's behaviour. A word move keeps the characters unchanged (`Ξ_Cont Doc1`), requires `Left_Word ≠ ⟨⟩`, and sets `Left_Word′ = front Left_Word`; the same for lines. These are `MvWordC` and `MvLineC` in `ZEditor/Spec/Doc1.lean`. Lean proves that this gives the C's result ("ca|t" to "|cat", `leftMvWordC_caT`), and that with it all fifteen operations of §1.6 are total (`LeftMoveWordC_Doc1_total` and the others in `ZEditor/Spec/Total.lean`).
+
 ## Readings to confirm by eye
 
 **All 11 confirmed by eye on 2026-10-30.** Every finding that rests on a single symbol has now been checked independently against the scan; none was a misreading.
@@ -56,6 +172,7 @@ The scan is 1-bit black-and-white at 199 ppi, so nothing finer than that can be 
 | ✓ | Finding | What to look at | Page |
 |---|---|---|---|
 | ✓ | 1 | `Line ≙ seq (Char − {nl})`, not `seq₁`, and no `∪ {⟨nl⟩}` (confirmed by eye 2026-10-30) | 58 (55) |
+| ✓ | 2 | `DocWordSeq` box: `rng (w1) = NonWhiteSpace` with a plain `=` (not `⊆`) (confirmed by eye 2026-10-30) | 59 (56) |
 | ✓ | 5 | `PadWSNL`: `UDLines QPCurY visible_prefix UDCurLine′` (visible_prefix, not prefix) (confirmed by eye 2026-10-30; the same schema uses plain `prefix` in its second case, so the choice was deliberate) | 88 (85) |
 | ✓ | 6b, 6c | `RemMText`, third line: `MarkedSeq ⁀ MarkSeq = Left_Char` (Left, not Right) (confirmed by eye 2026-10-30) | 92 (89) |
 | ✓ | 6a | `Pst`: `MarkedSeq′ = ⟨⟩` (confirmed by eye 2026-10-30) | 93 (90) |

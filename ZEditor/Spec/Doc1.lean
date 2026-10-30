@@ -68,7 +68,7 @@ elements (printed p.57) and `DocLineSeq` tests `l1 ≠ ⟨nl⟩`. With the print
 definition no document containing a newline has a line view
 (`printed_lines_have_no_nl`), and the line view is not unique
 (`printed_lines_not_unique`). We use the reading the examples need:
-`seq₁ (Char − {nl}) ∪ {⟨nl⟩}`. -/
+`seq₁ (Char − {nl}) ∪ {⟨nl⟩}`. This is decision D1 in `FINDINGS.md`. -/
 abbrev IsLine (l : List Char) : Prop :=
   (l ≠ [] ∧ nl ∉ l) ∨ l = [nl]
 
@@ -81,7 +81,8 @@ Printed: `rng (w1) = WhiteSpace ⇒ rng (w2) ≠ WhiteSpace` and likewise for
 `NonWhiteSpace`. With `=` the second clause never applies (no finite word uses
 every non-space character), so `⟨⟨c,a⟩,⟨t⟩⟩` would be allowed and the word view
 would not be unique, contrary to the prose and Corollary 3:1.2a. We read
-`ran w = S` as "w is drawn from S" (`ran w ⊆ S`). -/
+`ran w = S` as "w is drawn from S" (`ran w ⊆ S`). This is decision D2 in
+`FINDINGS.md`. -/
 abbrev DocWordSeq (W : List (List Char)) : Prop :=
   (∀ w ∈ W, IsWord w) ∧
   ∀ p ∈ adjacent W,
@@ -316,7 +317,13 @@ word view with the content kept unchanged at the *character* level, i.e. using
 `Ξ_Cont Doc1` (which the book defines in §1.3 but does not use here). -/
 
 /-- `MvWord` as the C implements it: `Mv` on the word view, but with the content
-kept unchanged as characters (`Ξ_Cont Doc1`) rather than as words. -/
+kept unchanged as characters (`Ξ_Cont Doc1`) rather than as words.
+
+**Warning: this departs from the printed specification.** As printed (`MvWord`),
+a word move inside a word has no outcome (`leftMoveWord_Doc1_stuck`), so the
+specification does not say what should happen. This version follows the C
+program in the same monograph. It is decision D3 in `FINDINGS.md`, where the
+reasons are given. -/
 def MvWordC : Op := fun d d' =>
   XiContDoc1 d d' ∧ d.leftWord ≠ [] ∧ d'.leftWord = d.leftWord.dropLast
 

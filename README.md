@@ -56,6 +56,9 @@ zeditor/
   ZEditor/Spec/Doc8.lean   -- §7: search and replace
   ZEditor/Spec/Doc9.lean   -- §8: the window onto the display (the complete editor)
   ZEditor/Check.lean    -- exhaustive computational checks of the Doc3 and Doc4 proof obligations
+  ZEditor/Demo.lean     -- a scripted demonstration
+  ZEditor/Impl/Editor.lean -- the runnable editor's core
+  Main.lean             -- the terminal program
 ```
 
 Plain Lean 4 (toolchain in `lean-toolchain`), no Mathlib. Build with `lake build`. `Check.lean` is not part of the build; run it with `lake env lean ZEditor/Check.lean`.
@@ -74,14 +77,14 @@ All findings are tracked in [`FINDINGS.md`](FINDINGS.md), one row each, with sev
 
 Writing the specification in Lean, where every definition must type-check and every claim must be proved, exposed problems in the printed Z that the book's own semi-formal proofs did not catch. Each one is backed by a theorem in `ZEditor/Doc1.lean`.
 
-### 1. The definition of a line is wrong
+### 1. The definition of a line is contradictory
 
 The book defines `Line ≙ seq (Char − {nl})`, a possibly empty sequence of non-newline characters. But its own examples split a document into lines that include newline lines, e.g. "the⏎canary" becomes `⟨⟨t,h,e⟩, ⟨nl⟩, ⟨c,a,n,a,r,y⟩⟩`, and `DocLineSeq` tests `l1 ≠ ⟨nl⟩`. Taken literally, the printed definition means:
 
 - no document containing a newline has a line view at all (`printed_lines_have_no_nl`);
 - the empty document has two different line views, `⟨⟩` and `⟨⟨⟩⟩`, so the "one-to-one" function `FL` is not one-to-one and Corollary 3:1.2c is false (`printed_lines_not_unique`).
 
-We use the reading the examples need: a line is a non-empty run of non-newline characters, or the newline on its own.
+We use the reading the examples need: a line is a non-empty run of non-newline characters, or the newline on its own. This is decision [D1](FINDINGS.md#d1-what-a-line-is), which shows the relevant parts of the scan.
 
 ### 2. The word rule uses `=` where `⊆` is meant
 
@@ -206,6 +209,63 @@ The C program is not the specification, but it is useful in two ways:
 1. **It shows intent where the Z is wrong or ambiguous**, as with word movement above.
 2. **It is a refinement to verify.** The C stores the document in a gap buffer (`Arr`, with indices `LP`, `RP`, `CP`), and Part Four gives the relation between that representation and the Z state. Writing the gap buffer in Lean and proving each C function satisfies its Z operation would make the book's method fully formal.
 
+## Running the editor
+
+A first prototype runs as a full-screen terminal editor:
+
+    lake build
+    .lake/build/bin/zeditor notes.txt
+
+Typing inserts text; Enter, Tab, Backspace, Delete and the arrow keys work; **Ctrl-S** saves and **Ctrl-Q** quits (press it twice if there are unsaved changes). The status line at the bottom shows the file, whether it has unsaved changes, and the cursor position.
+
+It can also run a script of keys and print the resulting screen, which is how it is tested:
+
+    .lake/build/bin/zeditor --keys script.txt notes.txt
+
+where `script.txt` has one key per line: `type some text`, or a key name (`Enter`, `Tab`, `Backspace`, `Delete`, `Left`, `Right`, `Up`, `Down`, `Save`).
+
+Tests: `sh tests/save.sh` checks that saving writes exactly the document's text and nothing else.
+
+Note for macOS Terminal: save with **Ctrl-S**, not **⌘S**. Terminal catches ⌘S itself and saves its whole window (as "Terminal Saved Output.txt"), before the editor sees the key.
+
+**A lesson from first use.** The first time the editor was tried, ⌘S was pressed to save, out of habit from every other Mac application. Terminal saved its own window instead, including the earlier shell history, and it looked as though the editor had saved far more than the document. A terminal program can never receive ⌘ keys: Terminal keeps them for itself. Ctrl-S was the convention of 1990 terminals (and of Neilson's era); ⌘S is the convention users now expect. The status line names Ctrl-S for this reason, but the mismatch remains a real usability hazard for any terminal editor on a Mac.
+
+The prototype is `Main.lean` (the terminal) and `ZEditor/Impl/Editor.lean` (the editor itself, with no input or output). Every key is followed by the specification's tidying operations, so trailing spaces vanish when you leave a line, and moving the cursor past the end of the text pads the document as Doc4 specifies. The operations are not yet proved to meet the specification; that comes next. `ZEditor/Demo.lean` is a scripted demonstration run inside Lean (`lake env lean ZEditor/Demo.lean`).
+
+## From the C to a Lean editor
+
+The runnable Lean editor has the same design as Neilson's C: a full-screen terminal editor, like `vi` or `nano`. The C's `main.c` is:
+
+```c
+GetTermCapAndSetWin(); SetTerminal();      /* take over the terminal */
+StartEditFile(FName, ...);                 /* read the file */
+DisplayTheWindow();                        /* draw the first screen */
+while (TRUE) {
+    ExecuteCommand();                      /* = OP_Doc9(KbdRead()) */
+    if (Not(CharAvailable())) DisplayTheWindow();
+    SetDocCursor();
+}
+```
+
+and the Lean editor follows the same four steps:
+
+| Step | Neilson's C | Lean |
+|---|---|---|
+| Take over the terminal | `GetTermCapAndSetWin`, `SetTerminal` (termcap; vt220 and Sun keyboards) | `stty raw -echo` and the terminal's alternate screen (standard ANSI codes) |
+| Load the file | `StartEditFile` | read the file into the document state |
+| Each key | `OP_Doc9(KbdRead())` | key ↦ operation, then the Doc9 operation |
+| Draw | `DisplayTheWindow`, `SetDocCursor` | draw the window, place the cursor |
+
+The specification fits a terminal unusually well: the Doc9 *window* (`WinWidth` × `WinHeight` with two offsets) is the terminal screen, and the window policy proved total in `Doc9.lean` is what decides when the screen scrolls.
+
+Three things make the Lean editor simpler to follow than the C:
+
+1. **No incremental redrawing.** On a 1990 terminal at 9600 baud, redrawing a screen was slow. So the C redraws only when no key is waiting (`CharAvailable`) and keeps careful account of what changed: `WSRem`, `NLRem`, `WSIns`, `Update_Doc3`, `Update_Doc4` and so on. That bookkeeping is a large part of the C. A modern terminal redraws a whole screen in a few milliseconds, so the Lean editor redraws the window after every key.
+2. **One state value instead of global variables.** The C keeps its state in global variables (`LP`, `RP`, `CP`, `CurX`, `CurY`, `MP`, `EState`, …) that every function reads and writes. The Lean editor passes a single document value through its loop: a key and a document go in, a new document comes out. Each step can be read, tested and proved on its own.
+3. **The operations are the specification's operations.** In the C, the link between, say, `LeftMoveWord_Doc1` and its Z schema is the informal argument of Part Four. In Lean, the operation the loop calls is the one the specification describes, and the aim is to prove each one meets it.
+
+So the design is Neilson's, without the parts that existed only because 1990 terminals were slow.
+
 ## Status and plan
 
 - [x] Doc1 translated (`ZEditor/Spec/Doc1.lean`): states, all operations, error cases, the total operations
@@ -223,4 +283,7 @@ The C program is not the specification, but it is useful in two ways:
 - [x] Doc8 (`Doc8.lean`): search and replace buffers, regular expressions as parameters, up and down search, Replace, promotion; problem 8 proved
 - [x] Doc9 (`Doc9.lean`): the window, offsets and window cursor; Lemmas 3:8.2a (corrected), 8.2b, 8.2c; Centre Window; the window policy (total); promotion of the Doc8 operations
 - [x] **The whole of Part Three is formalised**, Doc1 to Doc9
+- [x] A first runnable prototype: a full-screen terminal editor (open, type, move, save, quit), and a scripted mode for tests
+- [ ] Decisions on the remaining findings (`FINDINGS.md`)
+- [ ] Grow the editor to all the specification's operations, and prove each meets the corrected specification
 - [ ] Refinement: the C gap buffer for Doc1 and the proof that it implements the Z operations
