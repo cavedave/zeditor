@@ -1,0 +1,5 @@
+name = "zeditor"
+defaultTargets = ["ZEditor"]
+
+[[lean_lib]]
+name = "ZEditor"

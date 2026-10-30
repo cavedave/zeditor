@@ -1,0 +1,215 @@
+ID,PDF page,Printed page,Location,Text seen,Correction,Note
+1,1,title,bottom,ISBN 0-902928-78-3,ignore,Digits are small and blurred; especially the 2s and 8s.
+2,7,4,middle,"Z [27], [28], [30] and the Schema Calculus [19], [20]",keep,"Citation numbers; can be checked against the reference list (printed p.222) later. | Checked vs reference list (p.222-223): 27,28 Spivey; 30 Sufrin et al. Z Handbook; 19 King et al. Z grammar; 20 Morgan Schema Language. All fit."
+3,5,2,top,"for example [17], [28]",keep,"17 may be 16. Later text says 'VDM [17]', which fits 17. | Checked: [17] = Jones, Systematic Software Development Using VDM. 17 is right."
+4,5,2,middle,"early work [12], [33] ... refinement calculi [2], [5], [7], [14], [21], [23]",keep,"Citation numbers; the OCR garbled these badly. | Checked: 12 Hoare 1972, 33 Wirth 1971 (early work); 2 Abrial et al., 5 Dijkstra, 7 Gries, 14 Hoare/He/Sanders, 21 Morgan, 23 Morris (refinement calculi). All fit."
+5,6,3,top,illustrated in [8],keep,"Citation number. | Checked: [8] = Hayes, Specification Case Studies."
+6,6,3,bottom,tend to be make them more difficult to read,ignore,"Looks like a typo in the original ('tend to make'). Keep as printed, or correct?"
+7,6,3,bottom,"executable language [11], [31]",keep,"Citation numbers; 31 = Turner (functional programs as executable specifications) fits. | Checked: [11] Henderson (functional programming, rapid prototyping), [31] Turner. Both fit."
+8,7,4,middle,Lemma 3:1.4b,Lemma 3:1.4b,"Numbering scheme: Part 3, Section 1.4, second lemma ('b'). The OCR read '3:1Ah'. Is the separator a colon? It looks really like a h but i think its a b"
+9,9,6,bottom,a document line Doc1 and a display line Doc3,Doc1 / Doc3,The digits after 'Doc' are italic and small; 1 vs l and 3 vs 9 are worth confirming. I do not see where you are asking about. | Checked at 130 dpi: Doc1 and Doc3.
+10,8,5,bottom,"(see Part 4, Section 0)","(see Part 4, Section 0)",Could be 0 or 6. Section 0 is the Introduction of Part 4.
+11,9,6,middle,"ConcDoc9 (Appendix C, page xi) ... ConcDoc8 (Appendix C, page xiii)",keep,"Roman page numbers; can be checked against Appendix C later. | Checked: page xi (PDF 244) does have CharMatched, and page xiii (PDF 246) has MoveLineNumberOrError_Quote. But the code on xi is the Doc8 search (DownSearch_Doc8 / Replace_Doc8), so the text may have ConcDoc8/ConcDoc9 swapped. Keep as printed; confirm when the Doc8/Doc9 spec is transcribed."
+12,10,7,middle,"Although we found the power of the Schema Calculus to be a considerable asset ..., but would welcome a tool for automatic schema expansion,",,Grammar is odd in the original ('Although ... but'). Kept as printed.
+13,11,8,middle,"CICS (Customer Information Control System) [16] ... over 800,000 lines of code",keep,"Citation number and line count. | Checked: [16] = Johnson, Experience of formal development in CICS."
+14,11,8,middle,the later being used in the production new,,"Original typos ('later' for 'latter', missing 'of'). Kept as printed."
+15,12,9,middle,IBM [34] ... transputer [3],keep,"Citation numbers. | Checked: [34] Wordsworth, A Z Development Method (IBM); [3] Barrett, floating-point (transputer). Both fit."
+16,14,11,top,4.1 ∞-Refinement,4.1 ∞-Refinement,"Symbol before '-Refinement' looks like ∞ (infinity) but could be α or ∝. Section 4 is about resource limits, so ∞ seems plausible. This will recur in Part 2 Section 4. | Checked at 400 dpi on the section heading (PDF p.45): the loop is closed on both sides, so ∞ not ∝. Fits the infinite-capacity discussion."
+17,15,12,middle,Nested layout example: is the '∨' indented level with pred1 or level with pred2?,'V ConcSlate _ 31 _ Rei' is not a V here but the mathematical symbol  universal quantification  for all,"I placed ∨ level with pred1, matching the stated equivalent formula pred1 ∧ (((pred2 ⇒ (pred3 ∧ pred4)) ∧ pred5) ∨ pred6). This layout rule matters for reading every schema later. | Done: transcription has ∀ ConcState • ∃₁ AbsState • Rel (lines 332, 477)."
+18,18,15,top,AbsState ≙ [ A : seq ℕ | # A ≤ N ]; C : 1..N → ℕ; P : 0..N,,"Two different N's: blackboard ℕ (natural numbers) and italic N (a capacity constant). I read 'seq ℕ' and '→ ℕ' as naturals and '≤ N', '1..N', '0..N' as the constant. Also the arrow in 'C : 1..N → ℕ' looks like total function →. Please confirm. | p.17 AbsRel uses the same pattern (C₀ : 1..N → ℕ; P₀ : 0..N), which supports the reading."
+19,20,17,middle,Rel ≙ [ AbsState ∧ ConcState | absinv ],keep as printed,"Clearly printed 'absinv', but on p.13 Rel is defined with 'invrel'. Possibly an error in the original. Keep as printed or correct to invrel? | Checked at 130 dpi: p.17 clearly prints absinv, while p.13 defines Rel with invrel. Error in the original; use invrel when formalising."
+20,16,13,top,AS⃗ and CS⃗ (arrow over AS / CS),,"Notation choice: I write the 'vector' arrow as AS⃗. Alternatives: AS_vec, →AS, or bold. Which do you prefer for the whole transcript?"
+21,17,14,middle,AbsState₀ / AS⃗₀ / CS⃗₀ / A₀ / C₀ / P₀,,The subscript looks like an italic letter o rather than zero. I've written ₀ (zero). Does it matter to you?
+22,10,7,middle,proof-assistant [1] ... support environment [4],keep,"Citation numbers. [1] is probably Abrial's B tool (Neilson later built zedB on B); confirm from the reference list. | Checked: [1] Abrial, B User Manual; [4] Cottam et al., Project Support Environments."
+101,49,46,"Contents, entry 2.1",An Unbonnded Display Model,,Scan clearly shows 'Unbonnded'; could be a genuine typo in the original or u/n scan blur (u→n blur is pervasive on these pages). Transcribed as 'Unbounded'.
+102,50,47,"Contents, entry 6.4.2",The Save Comand / Cominand,,Glyphs between 'Co' and 'and' are blurred; may be a misprint 'Comand'. Transcribed as 'Command'.
+103,51,48,"Introduction, first sentence",[19`. [27],,"Punctuation after [19] is unclear (backtick/period); read as '[19], [27],'."
+104,54,51,"Second proof obligation (ΔAbsState example), conclusion",o′ ∈ N,,First variable in 'a′ = a − 1 ∧ ? ∈ ℕ' looks like o′; read as a′.
+105,55,52,AbsStateA horizontal schema,[ a.b : N | a ≤ b ],,Separator between a and b looks like a period; read as comma.
+106,58,55,Definition of Word,Word · ≙,,A small dot appears between 'Word' and '≙'; possibly a scan speck or stray mark. Kept as '·'.
+107,58,55,First example character sequence,"< t, h, e, sp, sp, r, a, t >",,"Sixth element looks like r but the word sequence that follows has c (c,a,t); read as c."
+108,58,55,Desired word sequence,"<< t, h, e, >, < sp, sp >. < c, a, t. >>",,"Trailing commas inside ⟨t, h, e,⟩ and ⟨c, a, t,⟩ appear printed; separators between groups look like ', ' and '. ' (read as commas). Kept trailing commas as printed."
+109,59,56,"DocWordSeq axiomatic box, quantifier line","∀ w1, w2 : Word ; w1, w2 : Word |",,"Declaration appears duplicated as printed; second pair might be different identifiers (e.g. W1, W2), scan unclear."
+110,59,56,DocWordSeq axiomatic box,rng (w1),,Printed in sans as 'rng' (not 'ran'); kept as printed.
+111,60,57,DocLineSeq axiomatic box,"l1, l2 : line",,Type appears lower-case italic 'line' (not 'Line'); kept as printed.
+112,62,59,Examples in 1.2.2 (W and W′ word sequences),"< c, a, t, >>",,"Trailing comma after t inside ⟨c, a, t,⟩ in several examples; group separators read as commas though some look like periods."
+113,63,60,"Lemma 3 : 1.2.2a, second and third disjuncts",C (| 1 .. #C − #C′ |),,Relational-image brackets printed as (| |); transcribed as ⦇ ⦈.
+201,65,62,Pair_Line definition,Pair[DocLineseq],,Lower-case 's' in 'seq' appears printed (cf. DocLineSeq in the preceding prose); confirm it is a printed typo not a scan artifact
+202,66,63,"Promotion list, last line",McBottom,,Reads as 'McBottom'; probably 'MvBottom' (used on p.68) with the v degraded to c
+203,70,67,"1.6 table, LeftDeleteWord_Doc1 row",ErrorTopOfDoe,,Final letter looks like 'e'; other rows read 'ErrorTopOfDoc'. Could be scan degradation
+204,72,69,"2.1, first paragraph",(Section 8),,Digit could be 8 or 3; bounded display model section number
+205,75,72,"Lemma 3:2.2b proof, Base step 1",# L = 1,,Italic numeral 1 vs letter l indistinguishable; read as 1 since # gives a number (line 2 'FDL L = l' read as letter l)
+206,76,73,"Doc2 schema, third predicate",UDCurY = #(FDL⁻¹ Left_Char),,Equals sign appears as wavy '≈' in scan; read as '='
+207,76,73,"Doc2 consistency proof, steps 1-7",L0 / R0,,"Could be letter O (LO, RO) or digit zero; read as zero throughout"
+208,77,74,Paragraph before Lemma 3:2.2d,Lemmas 3:1.3a and 3:2.1b,,Reads '3:2.1b' but only Lemma 3:2.1a appears in the text; could be 3:2.1a or 3:2.2b
+209,79,76,"after definition, predicate",(1 .. N ⩤ S),,Operator looks like domain restriction with a bar (⩤ anti-restriction) but could be ◁ (domain restriction)
+210,79,76,End of Doc3 initialization paragraph,PO 0,,Final character looks like 'D'/'O'; read as zero (PO 0 = initialization obligation)
+301,80,77,"Lemma 3:3.2a, conclusion",L visible_prefix L,,"A faint mark (dot/underscore) between 'visible' and 'prefix'; read as underscore. The book alternates between 'visible prefix' (space) and 'visible_prefix' (mark) throughout pp.77-85; I transcribed each occurrence as it appears, but the mark is low-contrast everywhere."
+302,80,77,"Proof of Lemma 3:3.2a, step 2 justification","defns. …, ⊆",,"Justification text is blurred; could be 'defns. ..., ⊆' or something else before the comma."
+303,80,77,Last line of Proof of Lemma 3:3.2b,Lemmas 3:2.2c,,Last digits/letter are small and blurred; could be 3:2.2c or 3:2.2e.
+304,81,78,"Section 3.3, last paragraph",the cursor line after UDCurY − 1,,"Printed reads UDCurY, but the schema RemTrailWS uses UDCurX − 1 in the same role; Y vs X is fairly clear in the scan, so this may be an author error."
+305,84,81,ErrorAtTopPage declaration,y : ℕ,,No subscript 1 is visible (QPVertMove declares y : ℕ₁); it could be a lost subscript.
+306,86,83,Initialize_Doc4 definition,Initialize_Doc3,,Subscript is badly degraded; read as Doc3.
+307,87,84,Para on moving below display,users's,,"The scan shows 'nsers's'. Read as 'users's' (as printed, possibly an author typo for user's)."
+308,88,85,"OP_Doc4 definition, 2nd line",SuccOP_QP,,"Scan looks like 'SuceOP_QP'; p.86 defines SuccOP_QP, so 'Suce' is probably a scan artefact (or a printed typo)."
+309,91,88,∀ OP : NonCursorOps line,OP_Doc5 ≙ OP_Doc4,,Both subscripts are degraded (look like 'Doc5'/'Doc4' with damaged final digit).
+310,91,88,∀ OP : CursorOps NoMarkSet line,CursorOps_NoMarkSet,,No underscore is visible between 'CursorOps' and 'NoMarkSet' on this line (the definition above has one); I inserted the underscore.
+311,91,88,∀ OP : CursorOps_MarkSet line,OP_Doc4,,Right-hand subscript is degraded; read as Doc4.
+312,92,89,"RemMText, first predicate",Markedseq′,,Lowercase 's' in 'Markedseq′' as it appears in print (elsewhere MarkedSeq).
+313,92,89,"RemMText, third predicate",MarkedSeq ⁀ MarkSeq = Left_Char,,"Clearly reads Left_Char, but the MarkedText invariant has MarkedSeq ⁀ MarkSeq = Right_Char; this is probably an author error. I kept it as printed."
+401,97,94,"First paragraph, last words",P0 2,,Elsewhere (p.93) printed 'PO 2' (letter O); here the second character looks like a zero 0
+402,98,95,Prose before SysWrite schema,"Sysptr,",,Input parameter named without '?' in prose (schema has Sysptr?); the following mark reads as comma/period
+403,100,97,"Initialize_Doc7 schema, first declaration line",Initialize_Doc6,,"Subscript blurred; reads like 'Doch', taken as Doc6"
+404,101,98,QuoteRequestContentChange definition,MarkSeq′,,Printed 'MarkSeq′' though the other name is MarkedSeq; possibly an original typo for MarkedSeq′
+405,101,98,QuoteRequestNoChange definition,ΞDoc5,,Reads as Doc5 (not Doc6/Doc7); same ΞDoc5 appears three times in Input_Quote on p.103
+406,102,99,"First paragraph, 2nd line",spare characters,,Reads 'spare'; probably intended 'space' (sp) but transcribed as printed
+407,104,101,"RequestAppendMarkedText schema, first line",QuateRequestNoChange,,Second letter of 'Quate' looks like 'a' rather than 'o'; may be scan artifact or original typo
+408,104,101,"Append_Quote definition, second disjunct",ErrarNoTextMarked,,Looks like 'Errar' (a for o); may be scan artifact or original typo
+409,105,102,"InputReadSeq schema, first declaration",ΔDocI,,Final character looks like capital I; probably Doc1 (italic 1)
+410,107,104,Escape Command paragraph,the test for the command,,Reads 'test'; possibly intended 'text'
+411,107,104,Escape schema name (also used in Eseape_Quote definition),Escape.ProvideText,,Separator between Escape and ProvideText is a low dot; could be an underscore or period
+412,107,104,Escape_Quote definition name,Eseape_Quote,,Reads 'Eseape' (s for c); possibly scan artifact or original typo
+413,107,104,"Escape_Quote definition, second disjunct",ErrorNoCommmandGiven,,Three m's appear printed (schema itself is ErrorNoCommandGiven)
+414,109,106,"OP_Doc7 promotion over QBuffEditOps, first disjunct",OP_Quote,,Subscript blurred; could read 'Quate'
+415,111,108,Repeat search/replace keystrokes,ReplaeeKey,,Reads 'Replaee' (e for c); likely original typo or scan artifact
+416,111,108,"regexpmatches box, predicate",# e ≥ s,,Printed as '# e ≥ s' (no # on s); transcribed as printed
+417,111,108,"matches box, first predicate line",e regexpmatches s,,Right-hand side reads 's' not 's2'; transcribed as printed
+501,112,109,"SuccDownSchDoc schema, 4th predicate",n .. m ↿ (Left_Char ⁀ Right_Char),,"Operator between n..m and the parenthesised sequence is a small slanted hooked glyph; read as extract ↿, could be another filter/extract symbol"
+502,113,110,Definition after UnSuccDownSchDoc,UnSuceDownSch_Quote,,Name appears printed as 'UnSuce' (not 'UnSucc'); may be a printing typo or a blurred 'c'
+503,114,111,PromoteSearchUnMark,MarkSeq = MarkedSeq′ = ⟨⟩,,"First name reads 'MarkSeq', second 'MarkedSeq′' (scan shows 'MarkedScq′'); names differ as printed"
+504,115,112,"SuccUpSchDoc schema, 4th predicate",n .. m ↿ (Left_Char ⁀ Right_Char),,"Same hooked operator as 501, read as extract ↿"
+505,115,112,UpSearch definition heading,UpSearch_Doc8,,Subscript blurred ('Docε'); read as Doc8 by analogy with DownSearch_Doc8
+506,116,113,SuccRplDoc definition,RemMatehedText,,Schema defined above as RemMatchedText; here the scan reads 'Matehed' - could be blurred 'ch' or genuine typo
+507,116,113,CopyQBuffRBuff definition,[ReplaceBuffer \ SearchBuffer],,Renaming separator looks like a backslash; standard Z renaming uses '/'
+508,117,114,PromoteReplaceUnMark,MarkSeq = MarkedSeq′ = ⟨⟩,,Same as 503
+509,120,117,prose 'We now mask out that part of ...',WimMaskLines,,"Printed 'Wim' rather than 'Win' (appears to be a genuine typo, but scan is soft)"
+510,122,119,"Proof of Lemma 3 : 8.2a, step 10 justification","8., propt. after",,"Reads '8.,' though step 9 would seem the natural reference; digit is fairly clear as 8"
+511,124,121,prose 8.2.2 second paragraph,CursorDownPage,,Scan reads 'CursorDownPnge'; likely blurred 'a'
+512,126,123,final ∀ OP : EditOps5 formula,OP_Doc8,,Right-hand subscript blurred ('Doco'); read as Doc8 from context
+601,235,ii,"RightDeleteChar_Doc1, line 1: if (RP!=Max)",(RP!=Max},,Closing parenthesis after Max looks like a brace } in the scan; read as )
+602,235,ii,"RightDeleteChar_Doc1, else branch: { return(Bot); }",return(Bot};,,Closing parenthesis after Bot looks like a brace } in the scan; read as )
+603,236,iii,"InsertChar_Doc1, TAB branch: count=tabstop-(count%tabstop);",count=tahetop-(count%tabstop);,,"First identifier after = looks like ""tahetop"" (b/s blurred); read as tabstop by analogy with the following identifier"
+604,237,iv,MoveToBot_Doc1: return(OK);,return(DK);,,First letter of OK looks like D in the scan; read as O
+605,238,v,"RemTrailWS, condition: if (OPType=LeftMove || ...",OPType=LeftMove,,"Printed with what appears to be a single = (character spacing confirms one glyph), unlike the == in the other three comparisons on the line; transcribed as printed"
+606,238,v,"RemTrailWS, closing brace of the outer if-block (indented, just before final })",),,Glyph looks like a closing parenthesis ); read as } since it closes the { opened after the if
+607,239,vi,CursorUpPage_Doc4: return(CursorUp(PageHeight));,PageReight,,Capital looks like R in the scan; read as H (PageHeight)
+608,242,ix,"CopyMTextPBuff, closing brace of the if (CP<MP) block",),,Glyph looks like a closing parenthesis ); read as } since it closes the { after (CP<MP)
+609,242,ix,"CopyMTextPBuff, else-if branch: PArr[PP]=GetArrCont(MPptr);",PArr[PF],,Second subscript letter looks like F in the scan; read as PP (as in the parallel line above)
+610,242,ix,"CopyMTextPBuff, closing brace of the else if (CP>MP) block",),,Glyph looks like a closing parenthesis ); read as } since it closes the { after (CP>MP)
+611,242,ix,"Paste_Doc6, else branch: return(OK);",return(DX);,,OK is badly printed and looks like DX; read as OK
+612,243,x,"Update_Doc8, closing brace of the if-block",),,Glyph looks like a closing parenthesis ); read as } since it closes the { opened on the line after the if
+613,244,xi,DownSearch_Doc8: if (matched) { PromptMessage(Found); ...,if (matched},,Closing parenthesis after matched looks like a brace }; read as )
+614,244,xi,CheckForMatch header: CheckForMatch(matched),CheckForMatch(matched},,Closing parenthesis looks like a brace }; read as )
+615,244,xi,"CheckForMatch, while body: lastmatchOK=CharMatched(...)",lastmatchDK,,O printed like D; read as lastmatchOK (as declared)
+616,244,xi,"CheckForMatch, last line: MatchedLength=Docptr;",MatchedLength=Bocptr;,,First letter looks like B; read as Docptr (as declared)
+617,244,xi,"CharMatched, third branch: SArr[(*ptr)+1]=='^'",'^',,"Character literal is a small raised mark, blurred; read as caret ^ (could be ` or ~)"
+618,244,xi,"CharMatched, '[' branch: while ((*ptr)!=SP && ...",(*ptr)!=SF,,Second letter looks like F; read as SP
+619,244,xi,"CharMatched, '[' branch: if (SArr[prevptr+2]=='^')",'^',,"Character literal is a small raised mark, blurred; read as caret ^ (could be ` or ~)"
+620,245,xii,Replace_Doc8: CopyRBuffToString(rplstring);,CopyRBuffToString,,"Printed as CopyRBuffToString; the replace buffer is elsewhere RpBuff, but the function is defined under this same name on p.xv, so reading is likely correct"
+621,245,xii,Header of Quit_Quote(),Quit_Quots(),,Final letter looks like s; read as Quit_Quote (called by Quote_StateQuote)
+622,245,xii,"Quit_Quote, inner else: { return(rep); }",{ return(rep); ),,Final closing brace looks like a parenthesis ); read as }
+623,246,xiii,"Write_Quote: CopyQBuffToString(filename,2);",CopyQDuffToString,,B printed like D; read as CopyQBuffToString (as in Append_Quote)
+624,246,xiii,"Escape_Quote: CopyQBuffToString(command,1);",CopyQBuffTnString,,o printed like n; read as To
+625,246,xiii,"Escape_Quote, closing brace of the if-block after RefreshDisplay_Doc9(); return(OK);",),,Glyph looks like a closing parenthesis ); read as }
+626,247,xiv,"MoveLineNumberOrError_Quote, end of long line: return(OK);",return(OK),,Final punctuation after return(OK) looks like a comma; read as ;
+627,247,xiv,LeftMoveChar_Quote: return(OK);,return(DX);,,"OK badly printed, looks like DX; read as OK"
+628,247,xiv,"RightMoveChar_Quote, else: return(BotQuote);",BotQnote,,u printed like n; read as BotQuote
+629,247,xiv,LeftDeleteChar_Quote: return(OK);,return(DX);,,"OK badly printed, looks like DX; read as OK"
+630,248,xv,Banner at foot of page: /* IMPLEMENTATION OF DOC9 */,DDC9,,"Looks like DDC9 in the scan; read as DOC9 (O printed like D, as elsewhere). Code for DOC9 continues on the next page"
+701,249,xvi,Initialize_Doc9,PromptCur=WinWidtb,,Final letter looks like 'b'; read as WinWidth (h/b confusion common in this scan)
+702,249,xvi,Initialize_Doc9,WinLineOK[ptr+1]=PALSE,,First letter of FALSE looks like 'P'; read as FALSE
+703,249,xvi,CentreWindow_Doc9,EState==State_Doc,,Operator merged in scan; could be = or ==; read as ==
+704,250,xvii,Screen_UpPage,int rep=OP_Doc8().,,Line ends with what looks like a period rather than a semicolon; transcribed as printed
+705,250,xvii,Screen_UpPage,(WinOffY>=PageBeight),,Looks like 'PageBeight'; read as PageHeight
+706,250,xvii,Screen_DownPage,OP_Doc8(),,Digit blurred; could be Doc6 or Doc8; read as Doc8 (matches context)
+707,250,xvii,CheckFlashBrackets,openhracket='<',,Looks like 'openhracket'; read as openbracket; the char literal '<' also slightly unclear
+708,250,xvii,CheckFlashBrackets,elee if (arrchar==closebracket),,First word looks like 'elee'; read as else
+709,251,xviii,GetNextStartln header,GetNaxtStartln,,Header looks like 'GetNaxtStartln'; read as GetNextStartln (called by that name elsewhere)
+710,251,xviii,DisplayWindowLine header,OisplayWindowLine,,First letter looks like 'O'; read as D
+711,252,xix,MoveWindowDown header,int y:   int first;,,Separator after 'int y' looks like a colon rather than semicolon; transcribed as printed
+712,252,xix,MoveWindowDown,WinOffY=WinOff!+y,,Second operand blurred ('WinOff!' / 'WinOffI'); read as WinOffY
+713,252,xix,MoveWindowDown,ScrollUpAdjust(y};,,Closing bracket looks like '}' rather than ')'; read as )
+714,252,xix,MoveWindowDown,"WindowLinesBad(first,WinHeight};",,Closing bracket looks like '}' rather than ')'; read as )
+715,252,xix,MoveWindowUp,if (last<=CurY-WinDffY),,Looks like 'WinDffY'; read as WinOffY
+716,253,xx,Pan,"MoveWindowLeft(WinOffX-CurX+QtrWinWidth), }",,Statement appears to end with a comma rather than semicolon; transcribed as printed
+717,253,xx,CursorInWindow,last>HalfWinHeight || laet>=DocNL+1-WinOffY,,Second 'last' looks like 'laet'; '>=' blurred (could be '>*'); read as last>=
+718,253,xx,CursorInWindow,"DieplayWindowRange(first,WinHeight)",,Looks like 'Dieplay'; read as DisplayWindowRange
+719,254,xxi,DisplayQuoteBuffer,putchar('|'),,Character inside quotes is a thin vertical stroke; read as '|' (could be '!' or 'l')
+720,255,xxii,main.c banner,/* ======== */,,Number of '=' characters in banner rule uncertain (approx. 8)
+721,255,xxii,main,GetNextCbar();,,Looks like 'GetNextCbar'; read as GetNextChar
+722,255,xxii,main,OP=RightMoveLine; OP_Doc8();,,Separator after RightMoveLine smudged (comma or semicolon); read as ;
+723,256,xxiii,ExecuteCommand,OP'=Save,,Operator looks like an apostrophe followed by '='; read as !=
+724,256,xxiii,read.c banner,/* ======== */,,Number of '=' characters in banner rule uncertain
+725,256,xxiii,StartEditFile comment,can he created,,Looks like 'he'; read as 'be'
+726,256,xxiii,StartEditFile comment,the sditor's capacity,,Looks like 'sditor's'; read as editor's
+727,256,xxiii,StartEditFile,Update_Doc6(0),,Digit could be 5 or 6; read as 6
+728,257,xxiv,NotDirectory,(stbufptr->st_mode & S_IFDIR) ^ S_IFDIR,,Operator is a small raised caret; read as ^
+729,257,xxiv,ReadPermission header,ResdPermission(filename),,Looks like 'ResdPermission'; read as ReadPermission
+730,257,xxiv,WritePermission,"fopen(filename,""w"")",,Mode letter inside quotes badly formed; read as w
+731,257,xxiv,ReadFromStore header,char *filename:,,Separator after *filename looks like a colon; transcribed as printed
+732,258,xxv,ControlChar,(x<' ' || x>'~'),,Contents of the char literals faint; read as space and tilde
+733,258,xxv,write.c banner,/* ========= */,,Number of '=' characters in banner rule uncertain
+734,259,xxvi,WriteToStore,return(CannotDpenFile),,Looks like 'CannotDpenFile'; read as CannotOpenFile
+735,259,xxvi,WriteBackupFile,PromptMeesags(UpdatingBackup),,Looks like 'PromptMeesags'; read as PromptMessage
+736,259,xxvi,globals.c banner,/* =========== */,,Number of '=' characters in banner rule uncertain
+737,259,xxvi,globals.c,KbdArr[kbdMaxx]; /* kbdread.c */,,"Index constant and file comment appear to start with lowercase 'k' (kbdMaxx, kbdread.c) while KbdArr/Kbdptr use capital K; transcribed lowercase as seen"
+738,259,xxvi,globals.c,int DPType;,,Looks like 'DPType'; read as OPType (used as OPType throughout)
+739,260,xxvii,globals.c termcap comments,begin stand-ont mode,,Looks like 'stand-ont'; read as stand-out
+740,260,xxvii,term.c banner,/* ========== */,,Number of '=' characters in banner rule uncertain
+741,260,xxvii,GetTermCapAndSetWin,SysExit(UnknowaTerminal),,Looks like 'UnknowaTerminal'; read as UnknownTerminal
+742,260,xxvii,GetTermCapAndSetWin,RC[0]=CH;,,Second letter could be H or R; read as CR (carriage return)
+743,260,xxvii,GetTermCapAndSetWin,"if (tgstetr(""mg"",ptr)==0)",,"Looks like 'tgstetr(""mg""'; read as tgetstr(""me"" (termcap end-modes); string could be ""mg"" or ""me"""
+744,261,xxviii,GetTermCapAndSetWin,ttyar.ts_cols=DefaultWinWidth,,Struct name looks like 'ttyar'/'ttysx'; read as ttysz
+745,261,xxviii,GetTermCapAndSetWin,ttyar.ts_lines=DefaultWinHeight,,Struct name looks like 'ttyar'; read as ttysz
+746,261,xxviii,GetTermCapAndSetWin,SysExit(WindowTooSbort),,Looks like 'WindowTooSbort'; read as WindowTooShort
+747,261,xxviii,SetOtherWinHeights,PegeHeight=...; PageWidth=WinWidth-QtrWinWidtb,,Looks like 'PegeHeight' and 'QtrWinWidtb'; read as PageHeight and QtrWinWidth
+748,261,xxviii,SetTerminal,SgttybMask=^(RAW+...),,Operator is a raised mark resembling '^'; read as ~ (bitwise complement)
+749,261,xxviii,SetTerminal,(^XTABS),,Operator is a raised mark resembling '^'; read as ~
+750,262,xxix,ResetTerminal,"""ReeetTerminal""",,Looks like 'ReeetTerminal'; read as ResetTerminal
+751,262,xxix,sysentryexit.c banner,/* ================ */,,Number of '=' characters in banner rule uncertain
+752,262,xxix,SysEntry header,int  arge;,,Looks like 'arge'; read as args
+753,262,xxix,SysEntry comment,the numher of arguments ... an array of addreeees.,,Looks like 'numher' and 'addreeees'; read as number and addresses
+754,262,xxix,SysEntry comment,"if had, SysExit ... Backnp",,Looks like 'had' and 'Backnp'; read as bad and Backup
+755,262,xxix,SysEntry comment,/*... elee the filename */,,Looks like 'elee'; read as else
+756,262,xxix,SysEntry,strlen(*argval)>=FNameMax-2,,Constant printed as FNameMax (not FNameMaxx as elsewhere); transcribed as seen; also on p.263
+757,262,xxix,SysEntry,(numfilenamea==0),,Looks like 'numfilenamea'; read as numfilenames
+758,262,xxix,SysEntry,LoadFredcap();,,Name 'Fredcap' as printed (also LoadFredcap on p.263); no correction implied
+759,262,xxix,SetNextOption comment,"lnitialLine and ""f"" to numfilsnamee",,Looks like 'numfilsnamee'; read as numfilenames
+760,262,xxix,SetNextOption comment,Tf the flag is not recognized,,Looks like 'Tf'; read as If
+761,262,xxix,SetNextOption,"strcmp(**av,""-l"")",,Character after '-' could be lowercase l or digit 1; read as -l (initial line flag)
+762,263,xxx,SetNextOption,"strcmp(**av,""-"")",,"String appears to contain only '-' plus a faint mark; may be ""-f"" (filename flag) faded in scan"
+763,263,xxx,LoadFredcap,"(HomePatb=getenv(""HOME""))",,Looks like 'HomePatb'; read as HomePath
+764,263,xxx,LoadFredcap,while (Key!=kbdMax),,Constant printed as kbdMax (not kbdMaxx) with lowercase k; transcribed as seen
+765,263,xxx,LoadFredcap,if (x!=EDF),,Looks like 'EDF'; read as EOF
+766,263,xxx,LoadFredcap,whils (IsDigitChar(x)),,Looks like 'whils'; read as while; also (x-'0') literal slightly unclear
+801,264,xxxi,Suspend(),DieplayTheWindow(),,Second letter looks like 'e' not 's'; could be a misprint of DisplayTheWindow or a scan artefact
+802,264,xxxi,PanicWriteToStore(),"FILE *fopen(),*SysFtr;",,Declared name reads SysFtr but SysPtr is used everywhere after; F vs P uncertain
+803,264,xxxi,SysTranslate() '~' branch,"Insert(HomePath,uewname,newptr)",,"Reads 'uewname' (u vs n); presumably newname, which is used elsewhere"
+804,265,xxxii,Insert(),newptr<FNameMar-2,,Last letter looks like r; FNameMax elsewhere (x vs r)
+805,265,xxxii,SetTermCursor(),"""OOPS"" (twice)",,"O vs 0 unclear: could be ""00PS"""
+806,266,xxxiii,ScrollUpAdjust(),"ScreenOutput(DO,...)",,"Printed glyphs look like 'DD'; in this font O resembles D (SO prints like 'SD'); termcap name likely DO. See also 808, 815"
+807,266,xxxiii,ScrollDownAdjust(),y+line+n<=WinHeigbt,,Reads 'WinHeigbt' (b vs h); WinHeight elsewhere
+808,267,xxxiv,CursorToNextLine(),"ScreenOutput(DO,1)",,"Printed glyphs look like 'OD'; DO assumed (cf. extern char DO / 806, 815)"
+809,267,xxxiv,printCSI(),'[',,"Bracket glyph indistinct, could be '{'; CSI = ESC ["
+810,267,xxxiv,externglobals.c,"Startln,Endln (also WinStartln)",,l vs I uncertain: could be StartIn/EndIn/WinStartIn
+811,267,xxxiv,externglobals.c,"MP,PP",,First identifier partly blurred; MP is best reading
+812,267,xxxiv,externglobals.c,QtrWinHetght,,Reads 'Hetght' (t vs i); HalfWinHeight on line above
+813,267,xxxiv,externglobals.c,KhdArr[kbdMaxx],,Reads 'KhdArr' (h vs b); KbdArr used in utilities.c
+814,268,xxxv,externglobals.c,extern struct sgttyh Sgttyb;,,Struct tag reads 'sgttyh'; standard name is sgttyb (h vs b)
+815,268,xxxv,externglobals.c,extern char DO[cntrlsize];,,Printed glyphs look like 'DD'; O/D confusable in this font
+816,268,xxxv,vt220Interpret(),(x>=' ' && x<='~'),,Quote/space and tilde glyphs small and indistinct (also in SunInterpret)
+817,268,xxxv,vt220Interpret(),(x=='O'),,O vs 0 uncertain; SS3 = ESC O
+818,269,xxxvi,vt220InterpretCSI(),if (d=='~') ... if (e=='~'),,Tilde glyph indistinct
+819,269,xxxvi,vt220InterpretSS3(),case 'e' : break;  /* 3 */,,Reads 'e'; keypad sequence would be 's' (p q r s t u)
+820,270,xxxvii,SunFunctionInterpret(),case 237 : Key=L8,,Printed looks like 'LB' (8 vs B)
+821,271,xxxviii,CharAvailable(),Kbdptr!=kbdMax,,Operator blurred (looks like '!*' or '!='); could be '<'
+822,271,xxxviii,IsAlphaNum(),('A'<=c && c<='Z') && ('0'<=c || c<='9'),,"Operators between/inside the last two groups blurred (&& vs ||); transcribed as seen, logic looks odd"
+823,272,xxxix,consts.c Max,/* array[0] not used! */,,Final mark looks like an apostrophe; '!' assumed
+824,272,xxxix,consts.c State_Doc comment,/* for ConcDoc8 */,,8 vs B
+825,273,xl,consts.c,#define BadLineNumber 17,,Printed reads 'HadLineNumber'; BadLineNumber used in messages.c (B/H confusion)
+826,273,xl,consts.c,#define NoTextMarked 27,,Printed reads 'NoTertMarked'; NoTextMarked used in messages.c
+827,273,xl,consts.c,#define EditAborted 48,,Next value is 50 (CntrlFound); no 49 in this list. 48 vs 49 uncertain
+828,274,xli,consts.c,#define Escape 49,,"Reads 49 but sequence runs 37,38,(49),40; may be 39"
+829,275,xlii,consts.c usage,[-l number],,l vs 1 uncertain ('-1' possible)
+830,276,xliii,PromptMessage() QuoteError,"""QUOTE ; abort  a  i  q  s  w  !cmd  number""",,"Separator after QUOTE looks like ';' though QuotePrompt is ""QUOTE : ""; internal spacing approximate"
+831,277,xliv,PromptMessage() Directory,MsgEnd(); break;,,Printed reads 'brsak'
