@@ -201,6 +201,56 @@ theorem centreWindow_height_one (h1 : P.winHeight = 1) (d : Doc9 P) :
     omega
   · omega
 
+/-! ### Decision D8: centre on the true middle line
+
+The printed `HalfWinHeight = WinHeight / 2` is 0 for a one-line window, where
+centring then has no outcome (`centreWindow_height_one`), and for odd heights it
+is not the middle (for a 3-line window it is line 1). Decision D8 uses the true
+middle line, `(WinHeight + 1) / 2`: the same as the book for every even height,
+the true middle for odd heights, and at least 1 for every height. One-line
+windows matter because terminals now resize (★ modern convention). -/
+
+/-- The middle line of the window (decision D8). -/
+def MidWinHeight : Nat := (P.winHeight + 1) / 2
+
+theorem MidWinHeight_range : 1 ≤ MidWinHeight P ∧ MidWinHeight P ≤ P.winHeight := by
+  have := P.winHeight_pos; unfold MidWinHeight; omega
+
+/-- It agrees with the printed `HalfWinHeight` for every even window height. -/
+theorem MidWinHeight_even (h : P.winHeight % 2 = 0) : MidWinHeight P = HalfWinHeight P := by
+  unfold MidWinHeight HalfWinHeight; omega
+
+/-- `CenWin` with the middle line. -/
+def CenWinMid (d d' : Doc9 P) : Prop :=
+  d'.toDoc8 = d.toDoc8 ∧ d.udCurY ≥ MidWinHeight P ∧ d'.offsetX = d.offsetX ∧
+  d'.offsetY = d.udCurY - MidWinHeight P
+
+def ErrorTooNearTopMid (d d' : Doc9 P) (rep : Report) : Prop :=
+  d' = d ∧ d.udCurY < MidWinHeight P ∧ rep = "Too near top of document"
+
+def CentreWindowMid_Doc9 (d d' : Doc9 P) (rep : Report) : Prop :=
+  (CenWinMid P d d' ∧ Success rep) ∨ ErrorTooNearTopMid P d d' rep
+
+/-- **With the middle line, centring has an outcome for every window height**,
+including a one-line window. -/
+theorem CentreWindowMid_Doc9_total (d : Doc9 P) : ∃ d' rep, CentreWindowMid_Doc9 P d d' rep := by
+  by_cases hy : d.udCurY < MidWinHeight P
+  · exact ⟨d, _, .inr ⟨rfl, hy, rfl⟩⟩
+  · have hw := d.inWindow
+    unfold InWindow at hw
+    have hh := MidWinHeight_range P
+    have hin : InWindow P d.toDoc8 d.offsetX (d.udCurY - MidWinHeight P) := by
+      unfold InWindow; omega
+    exact ⟨Doc9.make P d.toDoc8 _ _ hin, _, .inl ⟨⟨rfl, by omega, rfl, rfl⟩, rfl⟩⟩
+
+/-- After centring, the cursor is on the middle line of the window. -/
+theorem CenWinMid_cursor_middle {d d' : Doc9 P} (h : CenWinMid P d d') :
+    d'.winCurY = MidWinHeight P := by
+  obtain ⟨h8, hge, -, hoy⟩ := h
+  have := d'.winCurY_eq
+  have hy : d'.udCurY = d.udCurY := by rw [h8]
+  omega
+
 /-! ## §8.2.2 The window policy -/
 
 /-- The four window operations of the policy, on the Doc8 state `d` that an

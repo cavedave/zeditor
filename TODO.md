@@ -14,8 +14,8 @@ The working list. Finished items move to the status list in `README.md`.
   - [x] 6a–6e: the mark is a position, as in the C (decision D5); edits clear it, moves keep it on the same text
   - [ ] Follow-up to D5: keep the mark through edits, as Emacs does?
   - [x] 7f: a changed flag, as the C's `DocChanged` (decision D6)
-  - [ ] 7h: identify files by name (the real file system)
-  - [ ] 9b: a one-line window
+  - [x] 7h: the real file system, as the C (decision D7) — **to discuss**: what the specification should say about files
+  - [x] 9b: centre on the true middle line, `(WinHeight + 1) / 2` (decision D8, ★ modern convention)
 - [ ] The design findings found by stating claims: N1 (moving deletes a space), N2 (Enter then Backspace loses a space), N3 (nothing is required to succeed)
 - [ ] The remaining "follow the C" findings: 5, 7a, 7b, 7c, 7d, 8a, 8b, 8c, 8d
 - [ ] The frame finding 7e (errors change nothing), and the ill-formed/minor 5b, 7g, 8e, 9a, 9c
@@ -29,7 +29,7 @@ The working list. Finished items move to the status list in `README.md`.
 - [ ] Show the marked text on screen (highlight)
 - [ ] Search and Replace
 - [ ] Quoted commands: save as, write, append, input, move to line, escape to the shell
-- [ ] Centre the window
+- [ ] Centre the window (using `MidWinHeight`, decision D8)
 - [ ] Characters beyond ASCII (UTF-8 input)
 - [ ] Terminal resizing (the specification assumes a fixed window size)
 - [ ] Prove the editor's operations meet the corrected specification (refinement)
@@ -65,6 +65,7 @@ The specification is about correctness (doing the right thing to the text). It s
 
 - [ ] `LESSONS.md`: reading an old formal text; the mistakes of the time, classified, with methods to avoid them; hardware constraints and an assumption register
 - [ ] Discussion: why revisit a formal specification from 1990 (area 1)
+- [ ] Discussion (after all decisions are made): specifications, functional programming and side effects. Do "pure" mathematical descriptions struggle with effects such as a file system? How the Z models the outside world (an abstract `Store`, finding 7h, decision D7), how Lean separates effects (`IO`), and what that means for specifying an editor
 - [ ] Paper, "what a 30-year-old formal specification teaches us": literature search first (mechanised checking of published Z, e.g. with Z/EVES or ProofPower; finding errors in published designs with Alloy); consider asking D. S. Neilson to comment or co-author
 
 ## Ideas (research directions)

@@ -35,7 +35,7 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 7e | 6.2–6.6 | Error branches leave the file store, the document or the document name unconstrained (Z schema disjunction): "Cannot open file" may change any file; a failed Input may replace the document with anything; "Document not changed" may change any file; editing the quote buffer may rename the document | unsafe | `writeToStore_cannot_open_any`, `input_error_any_document`, `save_any_store`, `quoteEdit_any_name` | n/a | as printed | open |
 | 7f | 6.4.2, 6.4.4 | No record of whether the document has changed, so Save and Quit may always answer "Document not changed"; Quit may exit without saving edits | unsafe | `save_any_store` | `DocChanged` flag | as printed | **Fixed** ⚠ follows the C: a changed flag, as `DocChanged` ([D6](#d6-remembering-whether-the-document-has-changed)) |
 | 7g | 6.2–6.7 | Undefined or ill-typed names: `DocCurX′`/`DocCurY′`, `ExchMTextPBuff`, `CursorLeftChar_Quote`/`CursorRightChar_Quote`, `rep!` in `ErrorIllegalQBuffEditOp`, `SysReturnControl` composed as if a schema, `ΔDocI`, `UnsuitableFile`, `SuccGetSysPtr` | ill-formed | (comments in `Doc7.lean`) | n/a | obvious readings | open |
-| 7h | 6.2, 6.4.6 | `SysGetPtr` does not relate the pointer to the file name, so files are not identified by name (saving then reading the same name need not give the text back); `RequestMvLineNumber` leaves the document content unconstrained; line number 0 gives `UDCurY′ = 0`, which has no outcome | weak | (comments in `Doc7.lean`) | n/a | as printed | open |
+| 7h | 6.2, 6.4.6 | `SysGetPtr` does not relate the pointer to the file name, so files are not identified by name (saving then reading the same name need not give the text back); `RequestMvLineNumber` leaves the document content unconstrained; line number 0 gives `UDCurY′ = 0`, which has no outcome | weak | (comments in `Doc7.lean`) | n/a | as printed | **Decided, to discuss** ⚠ follows the C: use the real file system ([D7](#d7-files)) |
 
 | 8a | 7.5 | Replace cannot replace: `PromoteReplace` contains `Ξ_Cont Doc1` (content unchanged), so a successful Replace leaves the document as it was; at a match the only general answer is "Editor full" | stuck | `replace_ok_unchanged` | replaces | as printed | open |
 | 8b | 7.3 | Search with a mark set has no outcome when the text is found: `PromoteSearchUnMark` has unprimed `MarkSeq = ⟨⟩` (same in `PromoteReplaceUnMark`) | stuck | `downSearch_marked_stuck`, `replace_marked_full` | searches; the mark is adjusted | as printed | open |
@@ -43,7 +43,7 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 8d | 7.3–7.4 | A down search may move the cursor up (and an up search down): "first match" is stated as an empty range when the match is behind the cursor; nothing requires moving forward | unsafe | `downSearch_may_go_up` | searches forward from the cursor | as printed | open |
 | 8e | 7.2–7.5 | `regexpmatches` constraint `# e ≥ s` does not type-check; `matches` uses an undefined `s`; `matchedlength` has only its domain specified, so the amount of text a Replace removes is unconstrained; `CopyQBuffRBuff` renames schemas instead of variables; `ErrorReplaceFull_Doc` lacks `rep!`; the disjunct grouping of the search/replace operations contradicts Z precedence | ill-formed | (comments in `Doc8.lean`) | n/a | layout grouping; `matchedlength` a parameter | open |
 | 9a | 8.2 | Lemma 3:8.2a ("the character under the window cursor is the one under the display cursor") is undefined when the cursor is after the last character of its line, which is always the case in the empty document; proof step 8 (and 8.2c step 6) mix up `WinWidth` and `WinHeight`; `Window` writes `# WinLines` | minor | `Doc9.char_at_cursor` (the true, partial-indexing form) | n/a | partial indexing | open |
-| 9b | 8.2.1 | `HalfWinHeight = WinHeight/2` is said to be at least 1, but is 0 for a one-line window; Centre Window then has no outcome | stuck (edge case) | `centreWindow_height_one`; total for `WinHeight ≥ 2` (`CentreWindow_Doc9_total`) | n/a | as printed | open |
+| 9b | 8.2.1 | `HalfWinHeight = WinHeight/2` is said to be at least 1, but is 0 for a one-line window; Centre Window then has no outcome | stuck (edge case) | `centreWindow_height_one`; total for `WinHeight ≥ 2` (`CentreWindow_Doc9_total`) | n/a | as printed | **Changed** ★ modern convention: centre on the true middle line ([D8](#d8-centring-the-window)) |
 | 9c | 8.2.2 | "We thus discharge PO 1 for each Doc8 operation": the window policy is total (proved), but this only carries totality up from Doc8, where it already fails for findings 3, 5, 6, 7 and 8 | minor | `WindowPolicy_total`, `promote9_total` | n/a | n/a | open |
 | N1 | 3.3 | Moving the cursor deletes text: type "a␣", press ← and the space is deleted (no trailing spaces right of the cursor), so "a␣", ←, →, "b" gives "ab". Found by stating a claim; see `issues_notdefined.md` (C7) | weak (by design) | `step_back_deletes_space`; confirmed on the running editor | does the same | as printed | open |
 | N2 | 3.3 | Enter then Backspace in "ab␣\|cd" gives "abcd": the space between the words is lost. See `issues_notdefined.md` (C8) | weak (by design) | `enter_backspace_loses_space`; confirmed on the running editor | does the same | as printed | open |
@@ -241,6 +241,49 @@ From "ca|t" it moves to "|cat". `LeftMoveLine_Doc1` does the same for lines.
 **Evidence.**
 - On the running editor: `tests/changed.sh`, six cases (opening, moving, typing, typing then deleting, saving, editing after saving).
 - In the editor's code: `Editor.changed`, set in `Editor.applyKind`, cleared in `save` (`Main.lean`).
+
+### D7. Files
+
+*Finding 7h. Decided 2026-10-31: use the real file system, as the C does. **To be discussed further.***
+
+> **⚠ This decision follows the C. The specification has no file system.**
+>
+> The Z models files only abstractly (§6.2): an operation `SysGetPtr` returns a "pointer" for a file name, but nothing relates the pointer to the name, so the specification does not say that saving `notes.txt` and then reading `notes.txt` gives back the same text (claim C5 in `issues_notdefined.md`). Files have no identity in the specification. The C uses the operating system's files by name, and so does our editor.
+
+**Decision.** Files are the real file system's files, found by name. Saving writes the document's text to the named file; reading reads it back.
+
+**Still to discuss.** This decision is provisional. Open questions include: what the specification *should* say about files (a mapping from names to contents would be the simplest model that makes C5 true); what happens when another program changes the file while it is being edited; and how much of the operating system a specification of an editor should describe at all.
+
+**Evidence.** `tests/save.sh` (saving writes exactly the document's text, to the named file).
+
+### D8. Centring the window
+
+*Finding 9b. Decided 2026-10-31: centre on the true middle line of the window, `(WinHeight + 1) / 2`, instead of the book's `WinHeight / 2`.*
+
+> **★ This decision follows current practice, not the printed specification or the C.**
+>
+> The book centres the cursor on line `WinHeight / 2` of the window, and the C does the same. For a one-line window that is line 0, which does not exist, so Centre Window has no outcome (`centreWindow_height_one`). In 1990 the window size was a fixed constant and a one-line window was not a real case. Terminals now resize, and since our editor keeps one row for the status line, a two-row terminal or a squeezed split pane gives a one-line window.
+
+**Background.** Centre Window (§8.2.1) scrolls the window so that the cursor's line is in the middle of the screen. The book's text says the result has "minimum value 1"; for a one-line window it is 0.
+
+**Decision.** Use the true middle line, `(WinHeight + 1) / 2`:
+
+| Window height | Book: `WinHeight / 2` | Decision: `(WinHeight + 1) / 2` |
+|---|---|---|
+| 1 | 0 (no outcome) | 1 |
+| 2 | 1 | 1 |
+| 3 | 1 (not the middle) | 2 |
+| 24 | 12 | 12 |
+| 25 | 12 | 13 |
+
+It is the same as the book for every even height, the true middle for every odd height, and between 1 and the window height for every height.
+
+**Evidence (all in `ZEditor/Spec/Doc9.lean`).**
+- `MidWinHeight_range`: the middle line is always a line of the window.
+- `MidWinHeight_even`: it equals the book's value for every even window height.
+- `CentreWindowMid_Doc9_total`: centring has an outcome for every window height, including one line (the book's version needs at least two: `CentreWindow_Doc9_total`).
+- `CenWinMid_cursor_middle`: after centring, the cursor is on the middle line.
+- Centre Window is not yet in the editor; when it is added it will use `MidWinHeight`.
 
 ## Readings to confirm by eye
 
