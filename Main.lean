@@ -7,7 +7,9 @@ import ZEditor.Impl.Editor
     zeditor --keys SCRIPT FILE    run the keys in SCRIPT, print the screen
 
 Keys: typing inserts, Enter, Tab, Backspace, Delete, the arrow keys,
-Ctrl-S saves, Ctrl-Q quits (press it twice if there are unsaved changes).
+Ctrl-Space sets the mark, Ctrl-C copies the marked text, Ctrl-X cuts it,
+Ctrl-V pastes, Ctrl-S saves, Ctrl-Q quits (press it twice if there are unsaved
+changes).
 
 The shape follows Neilson's `main.c`: take over the terminal, load the file,
 draw, then loop: read a key, apply the operation, redraw.
@@ -41,6 +43,10 @@ def readKey (stdin : IO.FS.Stream) : IO Key := do
   | 13 | 10 => return .enter
   | 127 | 8 => return .backspace
   | 9 => return .tab
+  | 0 => return .setMark        -- Ctrl-Space
+  | 3 => return .copy           -- Ctrl-C
+  | 24 => return .cut           -- Ctrl-X
+  | 22 => return .paste         -- Ctrl-V
   | 19 => return .save          -- Ctrl-S
   | 17 => return .quit          -- Ctrl-Q
   | 27 =>                       -- an escape sequence: arrows, Delete
@@ -70,7 +76,8 @@ def draw (e : Editor) (w h : Nat) : IO Unit := do
 def save (e : Editor) : IO Editor := do
   try
     IO.FS.writeFile e.file (String.ofList e.content)
-    return { e with saved := e.content, message := "Saved", quitWarned := false }
+    return { e with saved := e.content, changed := false, message := "Saved",
+                    quitWarned := false }
   catch err =>
     return { e with message := s!"Cannot save: {err}" }
 
@@ -115,7 +122,8 @@ def interactive (file : String) : IO Unit := do
 /-! ## The scripted mode -/
 
 /-- A script has one key per line: `type TEXT`, or a key name
-(`Enter`, `Tab`, `Backspace`, `Delete`, `Left`, `Right`, `Up`, `Down`, `Save`). -/
+(`Enter`, `Tab`, `Backspace`, `Delete`, `Left`, `Right`, `Up`, `Down`, `Mark`,
+`Copy`, `Cut`, `Paste`, `Save`). -/
 def parseScript (s : String) : List Key :=
   (s.splitOn "\n").flatMap fun line =>
     if line.startsWith "type " then
@@ -124,6 +132,7 @@ def parseScript (s : String) : List Key :=
       | "Enter" => [.enter] | "Tab" => [.tab] | "Backspace" => [.backspace]
       | "Delete" => [.delete] | "Left" => [.left] | "Right" => [.right]
       | "Up" => [.up] | "Down" => [.down] | "Save" => [.save]
+      | "Mark" => [.setMark] | "Copy" => [.copy] | "Cut" => [.cut] | "Paste" => [.paste]
       | _ => []
 
 def scripted (scriptFile file : String) : IO Unit := do

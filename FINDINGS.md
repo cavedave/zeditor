@@ -22,18 +22,18 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 4d | 2.2 | Consistency proof says `Uₙ = ⟨l, r⟩` for `l ⁀ r`; Lemma 3:2.2d cites lemmas that don't exist | minor | `FDLinv_append`, `Initialize_Doc2_display` | n/a | n/a | open |
 | 5 | 4.2.2 | → (`CursorRightChar`) after typing a space at the end of a line can only answer "Editor full"; `PadWSNL` is not total as claimed | stuck | `cursorRight_after_space`; `Check.lean` (3,581 cases, all this one) | inserts a space and moves | both defined (`PadWSNL`, `PadWSNLC`) | open |
 | 5b | 4.2.2 | Padding may add surplus spaces that the tidying operations don't remove; only `ΔDoc4` excludes them | minor | (README) | pads exactly | as printed | open |
-| 6a | 5.2 | Paste can only answer "Editor full": `Pst` sets `MarkedSeq′ = ⟨⟩` instead of `PBuff`, breaking the `MarkedText` invariant | stuck | `pst_impossible`, `paste_only_full` | marks the pasted text | both defined (`Pst`, `PstC`) | open |
-| 6b | 5.2 | Cut with the mark below the cursor may replace the whole document (`Left_Char` for `Right_Char`, #313) | unsafe | `remMText_mark_below_unconstrained` | removes the marked text | both defined (`RemMText`, `RemMTextC`) | open |
-| 6c | 5.2 | Cut has no outcome at all when the marked text repeats the text before the mark (e.g. "aa\|", mark in the middle) | stuck | `remMText_both_premises`, `cut_no_outcome` | removes the marked text | both defined | open |
-| 6d | 5.1 | A mark set at the top of the document is indistinguishable from no mark; as printed, cursor moves may create a mark from nothing | weak | `setMark_at_top`, `cursorOp_mark_unconstrained` | `MP = −1` for no mark | as printed | open |
-| 6e | 5.1 | The `MarkedText` state does not always say which side of the cursor the mark is on: in "ab\|ba" with `MarkSeq = ⟨a⟩`, `MarkedSeq = ⟨b⟩`, the mark may be one place back or one place on. Cut then has no outcome, even with the `Left`/`Right` slip (6b) repaired. Found by stating the claim "Cut then Paste gives the document back" (`Claims.lean`), which the monograph never states | stuck | `mark_side_ambiguous`, `remMTextC_no_outcome`; with the mark as a position the claim is proved for every document (`cut_then_paste`) | keeps the mark as a position `MP` | our first fix (`RemMTextC`) is affected; the mark-as-position model is not yet adopted | open |
+| 6a | 5.2 | Paste can only answer "Editor full": `Pst` sets `MarkedSeq′ = ⟨⟩` instead of `PBuff`, breaking the `MarkedText` invariant | stuck | `pst_impossible`, `paste_only_full` | marks the pasted text | both defined (`Pst`, `PstC`) | **Fixed** ⚠ follows the C: the mark as a position ([D5](#d5-how-the-mark-is-remembered)) |
+| 6b | 5.2 | Cut with the mark below the cursor may replace the whole document (`Left_Char` for `Right_Char`, #313) | unsafe | `remMText_mark_below_unconstrained` | removes the marked text | both defined (`RemMText`, `RemMTextC`) | **Fixed** ⚠ follows the C: the mark as a position ([D5](#d5-how-the-mark-is-remembered)) |
+| 6c | 5.2 | Cut has no outcome at all when the marked text repeats the text before the mark (e.g. "aa\|", mark in the middle) | stuck | `remMText_both_premises`, `cut_no_outcome` | removes the marked text | both defined | **Fixed** ⚠ follows the C: the mark as a position ([D5](#d5-how-the-mark-is-remembered)) |
+| 6d | 5.1 | A mark set at the top of the document is indistinguishable from no mark; as printed, cursor moves may create a mark from nothing | weak | `setMark_at_top`, `cursorOp_mark_unconstrained` | `MP = −1` for no mark | as printed | **Fixed** ⚠ follows the C: the mark as a position ([D5](#d5-how-the-mark-is-remembered)) |
+| 6e | 5.1 | The `MarkedText` state does not always say which side of the cursor the mark is on: in "ab\|ba" with `MarkSeq = ⟨a⟩`, `MarkedSeq = ⟨b⟩`, the mark may be one place back or one place on. Cut then has no outcome, even with the `Left`/`Right` slip (6b) repaired. Found by stating the claim "Cut then Paste gives the document back" (`Claims.lean`), which the monograph never states | stuck | `mark_side_ambiguous`, `remMTextC_no_outcome`; with the mark as a position the claim is proved for every document (`cut_then_paste`) | keeps the mark as a position `MP` | our first fix (`RemMTextC`) is affected; the mark-as-position model is not yet adopted | **Fixed** ⚠ follows the C: the mark as a position ([D5](#d5-how-the-mark-is-remembered)) |
 
 | 7a | 6.4.4 | Quit has no outcome unless the whole document is marked: `RequestQuit` says both `WriteSeq! = MarkedSeq` and `WriteSeq! = Left_Char ⁀ Right_Char` | stuck | `quit_stuck` | writes the document if changed, then exits | as printed | open |
 | 7b | 6.5 | Move-to-line can never run: `MoveLineNumber_Quote` is missing from `Quote_StateQuote`, and a number is valid quote text, so it is not a "Quote error" either. The empty command (quote key pressed twice) is stuck the same way | stuck | `moveToLine_stuck`, `emptyQuote_stuck` | `MoveLineNumberOrError_Quote` is the fall-through case | as printed | open |
 | 7c | 6.4 | Input has no outcome while text is marked: `QuoteRequestContentChange` has unprimed `MarkedSeq = ⟨⟩` | stuck | `input_marked_stuck` | reads the file | as printed | open |
 | 7d | 6.2 | `SysRead` is inverted (`¬ NoReadError! ⇒ ReadSeq! = …`): a successful read may return any text | unsafe | `sysRead_success_any` | returns the file | as printed | open |
 | 7e | 6.2–6.6 | Error branches leave the file store, the document or the document name unconstrained (Z schema disjunction): "Cannot open file" may change any file; a failed Input may replace the document with anything; "Document not changed" may change any file; editing the quote buffer may rename the document | unsafe | `writeToStore_cannot_open_any`, `input_error_any_document`, `save_any_store`, `quoteEdit_any_name` | n/a | as printed | open |
-| 7f | 6.4.2, 6.4.4 | No record of whether the document has changed, so Save and Quit may always answer "Document not changed"; Quit may exit without saving edits | unsafe | `save_any_store` | `DocChanged` flag | as printed | open |
+| 7f | 6.4.2, 6.4.4 | No record of whether the document has changed, so Save and Quit may always answer "Document not changed"; Quit may exit without saving edits | unsafe | `save_any_store` | `DocChanged` flag | as printed | **Fixed** ⚠ follows the C: a changed flag, as `DocChanged` ([D6](#d6-remembering-whether-the-document-has-changed)) |
 | 7g | 6.2–6.7 | Undefined or ill-typed names: `DocCurX′`/`DocCurY′`, `ExchMTextPBuff`, `CursorLeftChar_Quote`/`CursorRightChar_Quote`, `rep!` in `ErrorIllegalQBuffEditOp`, `SysReturnControl` composed as if a schema, `ΔDocI`, `UnsuitableFile`, `SuccGetSysPtr` | ill-formed | (comments in `Doc7.lean`) | n/a | obvious readings | open |
 | 7h | 6.2, 6.4.6 | `SysGetPtr` does not relate the pointer to the file name, so files are not identified by name (saving then reading the same name need not give the text back); `RequestMvLineNumber` leaves the document content unconstrained; line number 0 gives `UDCurY′ = 0`, which has no outcome | weak | (comments in `Doc7.lean`) | n/a | as printed | open |
 
@@ -191,6 +191,57 @@ From "ca|t" it moves to "|cat". `LeftMoveLine_Doc1` does the same for lines.
 - On the running editor: `tests/final_newline.sh` (four cases, including the cursor above the end of the document).
 - In the editor's code: `keepFinalNewline` in `ZEditor/Impl/Editor.lean`. The Lean specification (`Doc3.lean`) still states the printed rule; it will be changed when the editor is proved against the corrected specification.
 
+### D5. How the mark is remembered
+
+*Findings 6a, 6b, 6c, 6d and 6e. Decided 2026-10-31: the mark is a position in the text, as in the C. Any edit clears it, as the specification and the C both say. A cursor move keeps it on the same text, as the C does.*
+
+> **⚠ This decision follows the C, not the printed specification.**
+>
+> The specification records the mark as two pieces of text, `MarkSeq` and `MarkedSeq`. That representation is the cause of five findings: Paste can only answer "Editor full" (6a); Cut with the mark below the cursor may rewrite the document (6b); Cut can have no outcome at all (6c); a mark at the top of the document is the same as no mark (6d); and in some states the representation does not say which side of the cursor the mark is on (6e). The C records the mark as a position `MP` in the text, with `MP = −1` meaning no mark, and none of these can happen. We follow the C. It is our reading of the author's intent, not his text.
+
+**Background.** The mark is one end of a selection: set it, move the cursor, and the text between the mark and the cursor is marked, ready to copy (Lift), cut, or write to a file.
+
+**Why a position.** Stating the claim "Cut then Paste gives the text back" (`issues_notdefined.md`, C1) and checking it settles the question:
+
+- with the printed schemas the claim fails, because Paste is impossible (`printed_cut_paste_fails`);
+- with the two schemas patched one at a time (our first attempt) it still fails, on "ab|ba" (`remMTextC_no_outcome`, finding 6e);
+- with the mark as a position it is proved for every document (`cut_then_paste` in `ZEditor/Claims.lean`).
+
+**Two smaller choices inside it:**
+
+1. *When the text is edited* (typing, deleting, Cut, Input), the mark is cleared. This is what the specification says (`ResetMark`, §5.1.1) and what the C does (`Update_Doc6` sets `MP = −1`). Emacs behaves differently: it keeps the mark and shifts it as text is inserted or deleted before it. That would be a reasonable later change; it is noted in the code.
+2. *When the cursor moves*, the mark stays on the same text. A move can change the text slightly (padding when the cursor moves past the end of a line, tidying when it leaves a line), and the mark is adjusted for that, as the C does (`Update_Doc6`: `MP = MP − WSRem + WSIns`). The specification allows the mark to end up anywhere (finding 6d's second half).
+
+**Paste** marks the pasted text: the mark goes at the old cursor position and the cursor after the pasted text, as in the C (`MP=CP` before inserting). The printed `Pst` intended this ("the pasted text becomes marked text") but set `MarkedSeq′` to empty (6a).
+
+**Evidence.**
+- Lean: `cut_then_paste` (the claim holds with the mark as a position, for every document); `printed_cut_paste_fails`, `remMTextC_no_outcome` (it fails for the printed schemas and for patched ones).
+- On the running editor: `tests/mark.sh`, six cases, one for each finding fixed and one for each sub-choice. The test of sub-choice 2 was checked to fail when the mark adjustment is switched off.
+- In the editor's code: `Editor.mark`, `adjustPos`, `Editor.lift`, `Editor.cut`, `Editor.paste` in `ZEditor/Impl/Editor.lean`. Keys: Ctrl-Space sets the mark, Ctrl-C copies, Ctrl-X cuts, Ctrl-V pastes.
+- The Lean specification (`Doc5.lean`, `Doc6.lean`) still states the printed schemas; it will be changed when the editor is proved against the corrected specification.
+
+### D6. Remembering whether the document has changed
+
+*Finding 7f. Decided 2026-10-31: follow the C. The editor keeps a flag that records whether the document has been edited since it was last read or saved.*
+
+> **⚠ This decision follows the C. The specification has no such record at all.**
+>
+> Nothing in the Z remembers whether the document has changed. So Save and Quit cannot tell whether saving is needed, and "Document not changed" is always a permitted answer: Quit may exit without saving the user's edits (finding 7f; the claim "Quit never discards unsaved changes" fails, `quit_may_discard`). The C keeps a flag, `DocChanged`, and we do the same.
+
+**What the C does** (as intended). `DocChanged` is set by `Update_Doc8` after every operation that is not a cursor move (typing, deleting, Cut, Paste), and directly by Replace and Input; it is cleared by Save. Save and Quit write the file only if it is set; Quit otherwise reports "Document not changed" and exits. If the program is killed, `PanicExit` saves to `~/fred.save` only if it is set. The status line shows `*` after the file name when it is set.
+
+**Decision.** The same: an edit sets the flag, Save clears it, cursor moves do not set it. Consequences worth knowing:
+
+- Typing a character and deleting it again still counts as a change, as in the C. (Our first prototype compared the text with the saved file instead, which would count it as unchanged.)
+- A cursor move that tidies away trailing spaces does not count as a change, as in the C.
+- Our editor asks for Ctrl-Q to be pressed twice when the flag is set, rather than saving automatically as the C's Quit does.
+
+**A caution about the C as printed.** This is "the C as intended". The listing as printed contains bug #605 (see "Errors in the C" below), and if the listing is exactly what ran, it would set `DocChanged` after *every* key, cursor moves included, and would also clear the mark after every key. Since that would make marking unusable, the printed line is probably not what was compiled.
+
+**Evidence.**
+- On the running editor: `tests/changed.sh`, six cases (opening, moving, typing, typing then deleting, saving, editing after saving).
+- In the editor's code: `Editor.changed`, set in `Editor.applyKind`, cleared in `save` (`Main.lean`).
+
 ## Readings to confirm by eye
 
 **All 11 confirmed by eye on 2026-10-30.** Every finding that rests on a single symbol has now been checked independently against the scan; none was a misreading.
@@ -218,7 +269,7 @@ The scan is 1-bit black-and-white at 199 ppi, so nothing finer than that can be 
 
 | # | Where | Finding | Note |
 |---|---|---|---|
-| C1 | `RemTrailWS` (#605) | `if (OPType=LeftMove \|\| …)` assigns instead of comparing | Always true; makes the C run both tidying routines after every operation, which matches the Z. Later code reading `OPType` sees the wrong value. |
+| C1 | `RemTrailWS` (#605), Appendix C p.v | `if (OPType=LeftMove \|\| …)` assigns instead of comparing | Because `=` binds more loosely than `||` in C, the line means `OPType = (LeftMove || …)`, that is `OPType = 1`, which is `LeftInsert`. If the listing is exactly what ran, then after every key, cursor moves included: `RemTrailNL` never runs (it needs `LeftMove` or `RightInsert`); `Update_Doc6` clears the mark, so a mark could never survive a cursor move and marking could not work; and `Update_Doc8` sets `DocChanged`. Broken marking is too obvious to have gone unnoticed, so the printed line is probably not what was compiled (a printing or transcription difference, or a different version). The monospaced font confirms a single `=` in the listing (`docs/eyecheck/pv_C605_OPType_zoom4x.png`); a photograph of the physical page is requested. (An earlier version of this note said the bug sets `OPType` to `LeftMove` and makes the C tidy after every operation as the Z does; that ignored C's operator precedence and was wrong.) |
 | C2 | `PanicWriteToStore` (#802) | declares `SysFtr`, uses `SysPtr` | Would not compile as printed (or a transcription/print error). |
 
 ## Errors in the book's text (transcription notes)

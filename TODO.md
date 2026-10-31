@@ -11,8 +11,9 @@ The working list. Finished items move to the status list in `README.md`.
 - [ ] The real choices, which change how the editor behaves:
   - [x] 4c: the final newline is kept (decision D4, ★ modern convention)
   - [ ] Follow-up to D4: add a final newline on save if a file lacks one, as vim and nano do?
-  - [ ] 6d and 6e: how to represent the mark. Proposal: as a position, as in the C. This settles 6a, 6b, 6c, 6d and 6e together (`issues_notdefined.md`, C1)
-  - [ ] 7f: record whether the document has changed, so Quit cannot lose edits
+  - [x] 6a–6e: the mark is a position, as in the C (decision D5); edits clear it, moves keep it on the same text
+  - [ ] Follow-up to D5: keep the mark through edits, as Emacs does?
+  - [x] 7f: a changed flag, as the C's `DocChanged` (decision D6)
   - [ ] 7h: identify files by name (the real file system)
   - [ ] 9b: a one-line window
 - [ ] The design findings found by stating claims: N1 (moving deletes a space), N2 (Enter then Backspace loses a space), N3 (nothing is required to succeed)
@@ -24,14 +25,15 @@ The working list. Finished items move to the status list in `README.md`.
 - [x] First prototype: open, type, Enter, Tab, Backspace, Delete, arrows, Ctrl-S save, Ctrl-Q quit; scripted mode; `tests/save.sh`
 - [ ] Choose and document key bindings
 - [ ] Word and line moves (decision D3)
-- [ ] Mark, Lift, Cut, Paste (after the mark decision)
+- [x] Mark, Lift (copy), Cut, Paste (decision D5); `tests/mark.sh`
+- [ ] Show the marked text on screen (highlight)
 - [ ] Search and Replace
 - [ ] Quoted commands: save as, write, append, input, move to line, escape to the shell
 - [ ] Centre the window
 - [ ] Characters beyond ASCII (UTF-8 input)
 - [ ] Terminal resizing (the specification assumes a fixed window size)
 - [ ] Prove the editor's operations meet the corrected specification (refinement)
-- [ ] Change the Lean specification's Doc3 invariant to decision D4 (at most one empty line at the end)
+- [ ] Change the Lean specification's Doc3 invariant to decision D4 (at most one empty line at the end), and Doc5/Doc6 to decision D5 (the mark as a position)
 
 ## After the MVP
 

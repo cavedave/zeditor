@@ -13,5 +13,5 @@ if lake env lean ZEditor/Check.lean > /dev/null 2>&1; then echo "PASS  all recor
 else echo "FAIL  a recorded result changed:"; lake env lean ZEditor/Check.lean 2>&1 | grep -i "guard\|error" | head; exit 1; fi
 echo "== 3. The running editor"
 fail=0
-for t in tests/save.sh tests/final_newline.sh; do sh "$t" || fail=1; done
+for t in tests/save.sh tests/final_newline.sh tests/mark.sh tests/changed.sh; do sh "$t" || fail=1; done
 exit $fail

@@ -12,7 +12,7 @@ This file gathers every disagreement we have found, sorted by kind. References a
 | B. The C knows something the Z does not say | knowledge that lived only in the code | 8 |
 | C. The Z leaves a choice, the C makes one | allowed by the specification, but worth knowing | 6 |
 | D. They agree, and both surprise | the disagreement is with the user, not between the two | 3 |
-| E. The C's intended code differs from the Z, and a bug makes them agree | | 1 |
+| E. A bug in the C as printed | what the listing would do if it is exactly what ran | 1 |
 
 The pattern of A and B together is the main lesson. **Where the Z and the C disagree, the C is right**: in every case of kind A, the C does what the prose of the specification describes. And **where the C knows something the Z does not say**, a program rebuilt from the specification alone loses it. Our own prototype did exactly that (B1). Neither description alone holds the whole design.
 
@@ -65,7 +65,7 @@ The specification deliberately allows several outcomes; the C picks one. Not dis
 | C2 | Tab width | any positive number of spaces | to the next multiple of 8 (`tabstop`) | to the next multiple of 4 |
 | C3 | Padding when the cursor moves past the text | any amount of padding (finding 5b) | exactly enough | exactly enough |
 | C4 | When the window scrolls | any window that contains the cursor | redraws only when no key is waiting; scroll and pan rules | keep the window while the cursor is in it, else move just enough |
-| C5 | The mark after a cursor move | anywhere (finding 6d) | adjusted for spaces and newlines added or removed (`Update_Doc6`, p.viii) | (not yet implemented) |
+| C5 | The mark after a cursor move | anywhere (finding 6d) | adjusted for spaces and newlines added or removed (`Update_Doc6`, p.viii) | the same, as the C (decision D5) |
 | C6 | "Editor full" | always allowed (N3) | only when the fixed-size array is full | never (memory is not fixed) |
 
 ## D. They agree, and both surprise
@@ -78,11 +78,11 @@ The Z and the C agree, but the behaviour surprises a user. Found by stating clai
 | D2 | Enter then Backspace in "ab␣\|cd" gives "abcd" | N2 |
 | D3 | Word moves treat a run of spaces as a word, so "delete word" at `cat\|␣sat` deletes only the space | (demo) |
 
-## E. The C's intended code differs from the Z, and a bug makes them agree
+## E. A bug in the C as printed
 
 | # | What | Detail |
 |---|---|---|
-| E1 | When the tidying runs | The Z tidies after *every* operation. The C was written to tidy only after certain kinds of operation (`if (OPType==LeftMove \|\| …)`). But the first test is written `OPType=LeftMove`, an assignment rather than a comparison (bug #605): it is always true and overwrites `OPType`, so the C in fact tidies after every operation, as the Z says. The code as intended would have disagreed with the specification; the bug makes it agree. |
+| E1 | When the tidying runs, and what the bug really does | The Z tidies after *every* operation. The C was written to tidy only after certain kinds of operation. But the first test is written `OPType=LeftMove`, an assignment (bug #605). Because `=` binds more loosely than `||` in C, the line means `OPType = (LeftMove || …)`, that is `OPType = 1`, which is `LeftInsert`. If the listing is exactly what ran, then after every key, cursor moves included: `RemTrailNL` never runs (it needs `LeftMove` or `RightInsert`); `Update_Doc6` clears the mark, so a mark could never survive a cursor move and marking could not work; and `Update_Doc8` sets `DocChanged`. Broken marking is too obvious to have gone unnoticed, so the printed line is probably not what was compiled (a printing or transcription difference, or a different version). The monospaced font confirms a single `=` in the listing (`docs/eyecheck/pv_C605_OPType_zoom4x.png`); a photograph of the physical page is requested. (An earlier version of this note said the bug sets `OPType` to `LeftMove` and makes the C tidy after every operation as the Z does; that ignored C's operator precedence and was wrong.) |
 
 ## Errors in the C itself
 

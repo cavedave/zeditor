@@ -10,7 +10,7 @@ The only digital copy of the monograph (`source/Zeditor.pdf`, SHA-256 `5c00b1450
 
 **Tick each one off** in the ✓ column as you go.
 
-## A. Essential: 13 pages
+## A. Essential: 14 pages
 
 Each of these pages carries a problem found in the specification (`FINDINGS.md`) that depends on one small mark or line. Ranked with the most fragile marks first: a missing prime or a `¬` is a few pixels in the scan, whereas a whole word is easy to read.
 
@@ -29,6 +29,7 @@ Each of these pages carries a problem found in the specification (`FINDINGS.md`)
 | ☐ | 11 | **105** | middle, the definition `Quote_StateQuote ≙ …` | Exactly eight names joined by `∨`, and **no** `MoveLineNumber`? | Finding 7b: Move-to-line can never run |
 | ☐ | 12 | **55** | lower half, the two definitions `Word ≙ …` and `Line ≙ …` | `Line ≙ seq (Char − {nl})`: `seq`, not `seq₁`? | Finding 1 (decision D1) |
 | ☐ | 13 | **57** | upper half, the character sequence `< t, h, e, nl, c, a, n, a, r, y, nl, nl, a, t, e >` and the line sequence below it | Are `< nl >` shown as separate lines in the line sequence? | Decision D1 (context) |
+| ☐ | 14 | **v** (Appendix C) | upper half, the C function `RemTrailWS`, the line starting `if (OPType` | Is the first comparison **`OPType=LeftMove`** (one `=`) or `OPType==LeftMove` (two)? The other three on the line have two | Bug #605: with one `=`, the C as printed could not keep a mark through a cursor move |
 
 ## B. Useful: readings that could change the meaning
 

@@ -114,7 +114,7 @@ This matters because the whole method rests on these operations: every higher le
 
 What holds up: the book asserts without proof that `RemTrailWS` and `RemTrailNL` are total, and both are now proved (`RemTrailWS_total`, `RemTrailNL_total`). The main Doc3 obligation, that every edit followed by the two tidying operations restores the invariant, is argued informally in the book. It is not yet proved in Lean, but an exhaustive check (`Check.lean`) finds no counterexample in all 21,014 Doc3 states from documents of up to 8 characters over `a`, space and newline, for all 15 operations. The same check with `RemTrailWS` removed finds 1,310 failures, so it does detect violations.
 
-An observation about the C: bug #605 (`if (OPType=LeftMove || …`) assigns rather than compares. `LeftMove` is 5, so the test is always true and `OPType` is overwritten. The effect is that the C runs both tidying routines after *every* operation, which is exactly what the Z specifies (`OP_Doc3 ≙ … ; RemTrailWS ; RemTrailNL` for every operation). Code after it that reads `OPType` sees the wrong value.
+An observation about the C: bug #605 (`if (OPType=LeftMove || …`) assigns rather than compares. Because `=` binds more loosely than `||` in C, the line means `OPType = (LeftMove || …)`, that is `OPType = 1`, which is `LeftInsert`. If the listing is exactly what ran, then after every key, cursor moves included: `RemTrailNL` never runs (it needs `LeftMove` or `RightInsert`); `Update_Doc6` clears the mark, so a mark could never survive a cursor move and marking could not work; and `Update_Doc8` sets `DocChanged`. Broken marking is too obvious to have gone unnoticed, so the printed line is probably not what was compiled (a printing or transcription difference, or a different version). The monospaced font confirms a single `=` in the listing (`docs/eyecheck/pv_C605_OPType_zoom4x.png`); a photograph of the physical page is requested. (An earlier version of this note said the bug sets `OPType` to `LeftMove` and makes the C tidy after every operation as the Z does; that ignored C's operator precedence and was wrong.)
 
 ### 5. Moving right after typing a space reports "Editor full"
 
@@ -216,13 +216,13 @@ A first prototype runs as a full-screen terminal editor:
     lake build
     .lake/build/bin/zeditor notes.txt
 
-Typing inserts text; Enter, Tab, Backspace, Delete and the arrow keys work; **Ctrl-S** saves and **Ctrl-Q** quits (press it twice if there are unsaved changes). The status line at the bottom shows the file, whether it has unsaved changes, and the cursor position.
+Typing inserts text; Enter, Tab, Backspace, Delete and the arrow keys work; **Ctrl-Space** sets the mark, **Ctrl-C** copies the marked text, **Ctrl-X** cuts it and **Ctrl-V** pastes; **Ctrl-S** saves and **Ctrl-Q** quits (press it twice if there are unsaved changes). The status line at the bottom shows the file, whether it has unsaved changes, and the cursor position.
 
 It can also run a script of keys and print the resulting screen, which is how it is tested:
 
     .lake/build/bin/zeditor --keys script.txt notes.txt
 
-where `script.txt` has one key per line: `type some text`, or a key name (`Enter`, `Tab`, `Backspace`, `Delete`, `Left`, `Right`, `Up`, `Down`, `Save`).
+where `script.txt` has one key per line: `type some text`, or a key name (`Enter`, `Tab`, `Backspace`, `Delete`, `Left`, `Right`, `Up`, `Down`, `Mark`, `Copy`, `Cut`, `Paste`, `Save`).
 
 Tests: `sh tests/save.sh` checks that saving writes exactly the document's text and nothing else; `sh tests/final_newline.sh` checks that a file keeps its final newline (decision D4).
 
@@ -244,7 +244,7 @@ There are four kinds of test, and each was written to answer a question about wh
 |---|---|---|
 | **Proofs** | `ZEditor/Spec/`, `ZEditor/Claims.lean` (run by `lake build`) | Whether an operation is stuck, unconstrained or contradictory as printed; whether a claim the monograph never makes holds |
 | **Exhaustive checks** | `ZEditor/Check.lean`, with its results recorded as `#guard` assertions | That finding 5 is the *only* way the cursor moves get stuck (442 cases up to 6 characters, all → after a trailing space); that decision D4 keeps the Doc3 invariant (2,639 states) and never loses a final newline, where the C's rule loses it in 10,013 cases |
-| **Editor tests** | `tests/save.sh`, `tests/final_newline.sh` | That saving writes exactly the document (prompted by a mix-up between Ctrl-S and Terminal's own ⌘S); that the final newline survives (D4) |
+| **Editor tests** | `tests/save.sh`, `tests/final_newline.sh`, `tests/mark.sh` | That saving writes exactly the document (prompted by a mix-up between Ctrl-S and Terminal's own ⌘S); that the final newline survives (D4); that the mark behaves as decided, one case per finding fixed (D5) |
 | **The demonstration** | `ZEditor/Demo.lean` | Showed, by running it, that word moves treat a run of spaces as a word |
 
 The story worth telling is that the specification could not be understood by reading alone. Several of its ambiguities only became questions with a yes-or-no answer once something was run or proved:
