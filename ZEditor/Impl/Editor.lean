@@ -44,10 +44,19 @@ def remTrailWS (prevCP : Nat) (c : Chars) : Chars :=
   else
     ofDisplay (L.set (p - 1) (stripSp (L.getD (p - 1) []))) x y
 
-/-- `RemTrailNL`: remove empty lines at the end of the document, below the cursor. -/
+/-- Remove empty lines at the end of `B`, but keep one if there was any: the
+document keeps its final newline (decision D4). -/
+def keepFinalNewline (B : List (List Char)) : List (List Char) :=
+  let s := stripNull B
+  if s.length < B.length then s ++ [[]] else s
+
+/-- `RemTrailNL`: remove empty lines at the end of the document, below the
+cursor, keeping at most one, so that a final newline survives (decision D4). The
+printed specification allows one to remain only when every line below the cursor
+is empty; the C removes them all. -/
 def remTrailNL (c : Chars) : Chars :=
   let (L, x, y) := display c
-  ofDisplay (L.take y ++ stripNull (L.drop y)) x y
+  ofDisplay (L.take y ++ keepFinalNewline (L.drop y)) x y
 
 /-- The Doc3 promotion: an operation is followed by `RemTrailWS ; RemTrailNL`. -/
 def tidy (prevCP : Nat) (c : Chars) : Chars := remTrailNL (remTrailWS prevCP c)

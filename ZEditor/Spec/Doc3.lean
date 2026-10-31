@@ -25,7 +25,10 @@ visibleseq" (printed p.76), which is what `getLast?` gives here.
 Note that the exemption for `⟨⟨⟩⟩` was written for the whole display (the
 empty document, Lemma 3:3.1a). Applied to the lines below the cursor it allows
 one invisible empty line to remain at the end of the document, contrary to the
-stated reason for the invariant. The C (`RemTrailNL`, Appendix C p.v) removes it. -/
+stated reason for the invariant. The C (`RemTrailNL`, Appendix C p.v) removes it.
+
+Decision D4 (`FINDINGS.md`) changes the rule to "at most one empty line at the end", so
+that a file keeps its final newline; this file still states the printed rule. -/
 abbrev visibleseq (L : List (List Char)) : Prop := L ≠ [[]] → L.getLast? ≠ some []
 
 /-- `S after N = sucᴺ ; (1 .. N ⩤ S)`: drop the first `N` elements. -/

@@ -176,4 +176,73 @@ def failures4 (n : Nat) : List (String × Chars × Chars) :=
   name == "CursorRightChar" && l.getLast? == some sp && (r == [] || r.head? == some nl)
 #eval ((failures4 6).length, (failures4 6).take 3)
 
+/-! ## Decision D4: keep the final newline
+
+The rule becomes "at most one empty line at the end of the document". Check the
+Doc3 proof obligation with that invariant and the tidying that keeps one
+final empty line. -/
+
+/-- At most one empty line at the end: the lines do not end with two empty lines. -/
+def atMostOneFinalEmptyB (L : List (List Char)) : Bool :=
+  !(L.length ≥ 2 && L.getLast? == some [] && L.dropLast.getLast? == some [])
+
+def inv3D4 (c : Chars) : Bool :=
+  let (L, x, y) := display c
+  let cur := L.getD (y - 1) []
+  (List.range L.length).all (fun i => i + 1 == y || visibleB (L.getD i [])) &&
+  visibleB (cur.drop (x - 1)) && atMostOneFinalEmptyB (L.drop y)
+
+def keepFinalNewline (B : List (List Char)) : List (List Char) :=
+  let s := stripNull B
+  if s.length < B.length then s ++ [[]] else s
+
+def remTrailNLD4 (c : Chars) : Chars :=
+  let (L, x, y) := display c
+  ofDisplay (L.take y ++ keepFinalNewline (L.drop y)) x y
+
+def statesD4 (n : Nat) : List Chars :=
+  (docs n).flatMap (fun d => (List.range (d.length + 1)).map fun k => (d.take k, d.drop k))
+    |>.filter inv3D4
+
+def failuresD4 (n : Nat) : List (String × Chars × Chars) :=
+  (statesD4 n).flatMap fun s =>
+    ops.filterMap fun (name, f) =>
+      let m₃ := remTrailNLD4 (remTrailWS s.1.length ((f s).getD s))
+      if inv3D4 m₃ then none else some (name, s, m₃)
+
+/-- The tidying never removes a final newline that the operation itself left in
+place (typing after the final newline is not a loss: the newline is still there). -/
+def finalNewlineLostD4 (n : Nat) : List (String × Chars × Chars) :=
+  (statesD4 n).flatMap fun s =>
+    ops.filterMap fun (name, f) =>
+      let m₁ := (f s).getD s
+      let m₃ := remTrailNLD4 (remTrailWS s.1.length m₁)
+      if (m₁.1 ++ m₁.2).getLast? == some nl && (m₃.1 ++ m₃.2).getLast? != some nl
+      then some (name, s, m₃) else none
+
+/-- The printed specification's tidying (strip all), for comparison. -/
+def finalNewlineLostC (n : Nat) : Nat :=
+  ((statesD4 n).flatMap fun s =>
+    ops.filterMap fun (name, f) =>
+      let m₁ := (f s).getD s
+      let m₃ := (remTrailNL (remTrailWS s.1.length m₁)).headD m₁
+      if (m₁.1 ++ m₁.2).getLast? == some nl && (m₃.1 ++ m₃.2).getLast? != some nl
+      then some name else none).length
+
+#eval ((statesD4 6).length, (failuresD4 6).length, (finalNewlineLostD4 6).length, finalNewlineLostC 6)
+
+/-! ## Recorded results
+
+These assertions make the checks into tests: if a result changes, running this
+file fails. -/
+
+#guard summary 6 == (2467, 0)                          -- Doc3 PO: no failures
+#guard (failures4 6).length == 0                       -- Doc4 with the C's padding: no failures
+#guard (stuck 6).length == 442                         -- printed PadWSNL: 442 stuck cases …
+#guard (stuck 6).all fun (name, (l, r)) =>             -- … all of them → after a trailing space
+  name == "CursorRightChar" && l.getLast? == some sp && (r == [] || r.head? == some nl)
+#guard (statesD4 6).length == 2639 && (failuresD4 6).length == 0   -- D4: the invariant holds
+#guard (finalNewlineLostD4 6).length == 0                         -- D4: no final newline lost
+#guard finalNewlineLostC 6 == 10013                               -- the C's rule loses it often
+
 end ZEditor.Check

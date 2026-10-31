@@ -18,7 +18,7 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 3 | 1.6 | Word and line moves are not total: inside a word or line there is no outcome at all | stuck | `leftMoveWord_Doc1_stuck` | moves (`LeftMoveWord_Doc1`) | C reading (`MvWordC`, `MvLineC`), content kept as characters | **Fixed** ⚠ follows the C ([D3](#d3-moving-by-a-word-or-a-line)) |
 | 4a | 3.3 | `RemTrailWS` is declared on `ΔUD` but uses `Left_Char`/`Right_Char` | ill-formed | (definition on `ΔDoc2`) | n/a | `ΔDoc2` | open |
 | 4b | 3.1 | `visibleseq` uses `last L` on a possibly empty sequence | ill-formed | (comment in `visibleseq`) | n/a | empty sequence is a visibleseq, as the prose says | open |
-| 4c | 3.1 | The empty-line invariant allows one invisible empty line at the end of the document, contrary to its stated purpose | weak | `Check.lean` | removes it | as printed | open |
+| 4c | 3.1 | The empty-line invariant allows one invisible empty line at the end of the document, contrary to its stated purpose | weak | `Check.lean` | removes it | at most one empty line at the end | **Changed** ★ modern convention: keep the final newline ([D4](#d4-the-newline-at-the-end-of-a-file)) |
 | 4d | 2.2 | Consistency proof says `Uₙ = ⟨l, r⟩` for `l ⁀ r`; Lemma 3:2.2d cites lemmas that don't exist | minor | `FDLinv_append`, `Initialize_Doc2_display` | n/a | n/a | open |
 | 5 | 4.2.2 | → (`CursorRightChar`) after typing a space at the end of a line can only answer "Editor full"; `PadWSNL` is not total as claimed | stuck | `cursorRight_after_space`; `Check.lean` (3,581 cases, all this one) | inserts a space and moves | both defined (`PadWSNL`, `PadWSNLC`) | open |
 | 5b | 4.2.2 | Padding may add surplus spaces that the tidying operations don't remove; only `ΔDoc4` excludes them | minor | (README) | pads exactly | as printed | open |
@@ -26,6 +26,7 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 6b | 5.2 | Cut with the mark below the cursor may replace the whole document (`Left_Char` for `Right_Char`, #313) | unsafe | `remMText_mark_below_unconstrained` | removes the marked text | both defined (`RemMText`, `RemMTextC`) | open |
 | 6c | 5.2 | Cut has no outcome at all when the marked text repeats the text before the mark (e.g. "aa\|", mark in the middle) | stuck | `remMText_both_premises`, `cut_no_outcome` | removes the marked text | both defined | open |
 | 6d | 5.1 | A mark set at the top of the document is indistinguishable from no mark; as printed, cursor moves may create a mark from nothing | weak | `setMark_at_top`, `cursorOp_mark_unconstrained` | `MP = −1` for no mark | as printed | open |
+| 6e | 5.1 | The `MarkedText` state does not always say which side of the cursor the mark is on: in "ab\|ba" with `MarkSeq = ⟨a⟩`, `MarkedSeq = ⟨b⟩`, the mark may be one place back or one place on. Cut then has no outcome, even with the `Left`/`Right` slip (6b) repaired. Found by stating the claim "Cut then Paste gives the document back" (`Claims.lean`), which the monograph never states | stuck | `mark_side_ambiguous`, `remMTextC_no_outcome`; with the mark as a position the claim is proved for every document (`cut_then_paste`) | keeps the mark as a position `MP` | our first fix (`RemMTextC`) is affected; the mark-as-position model is not yet adopted | open |
 
 | 7a | 6.4.4 | Quit has no outcome unless the whole document is marked: `RequestQuit` says both `WriteSeq! = MarkedSeq` and `WriteSeq! = Left_Char ⁀ Right_Char` | stuck | `quit_stuck` | writes the document if changed, then exits | as printed | open |
 | 7b | 6.5 | Move-to-line can never run: `MoveLineNumber_Quote` is missing from `Quote_StateQuote`, and a number is valid quote text, so it is not a "Quote error" either. The empty command (quote key pressed twice) is stuck the same way | stuck | `moveToLine_stuck`, `emptyQuote_stuck` | `MoveLineNumberOrError_Quote` is the fall-through case | as printed | open |
@@ -44,12 +45,17 @@ For each finding the Lean development currently uses the reading shown in "Readi
 | 9a | 8.2 | Lemma 3:8.2a ("the character under the window cursor is the one under the display cursor") is undefined when the cursor is after the last character of its line, which is always the case in the empty document; proof step 8 (and 8.2c step 6) mix up `WinWidth` and `WinHeight`; `Window` writes `# WinLines` | minor | `Doc9.char_at_cursor` (the true, partial-indexing form) | n/a | partial indexing | open |
 | 9b | 8.2.1 | `HalfWinHeight = WinHeight/2` is said to be at least 1, but is 0 for a one-line window; Centre Window then has no outcome | stuck (edge case) | `centreWindow_height_one`; total for `WinHeight ≥ 2` (`CentreWindow_Doc9_total`) | n/a | as printed | open |
 | 9c | 8.2.2 | "We thus discharge PO 1 for each Doc8 operation": the window policy is total (proved), but this only carries totality up from Doc8, where it already fails for findings 3, 5, 6, 7 and 8 | minor | `WindowPolicy_total`, `promote9_total` | n/a | n/a | open |
+| N1 | 3.3 | Moving the cursor deletes text: type "a␣", press ← and the space is deleted (no trailing spaces right of the cursor), so "a␣", ←, →, "b" gives "ab". Found by stating a claim; see `issues_notdefined.md` (C7) | weak (by design) | `step_back_deletes_space`; confirmed on the running editor | does the same | as printed | open |
+| N2 | 3.3 | Enter then Backspace in "ab␣\|cd" gives "abcd": the space between the words is lost. See `issues_notdefined.md` (C8) | weak (by design) | `enter_backspace_loses_space`; confirmed on the running editor | does the same | as printed | open |
+| N3 | Part 2 §4 | No operation is ever required to succeed: "Editor full" is always a permitted answer to insert, Paste and the cursor moves, so an editor that refuses them all meets the spec. See `issues_notdefined.md` (C2) | weak | `insert_may_always_refuse`, `paste_may_always_refuse`, `cursorDown_may_always_refuse` | inserts when there is room | as printed | open |
 
 ## Decisions
 
 How each decision was reached, with the evidence from the scan.
 
 **Policy when following the C.** Where the printed specification gives no usable answer, and the C program printed in the same monograph shows what the author intended, we follow the C. Every such decision is marked **⚠ follows the C** in the table above and carries a warning at the top of its section. The warning says what we changed, why the printed specification cannot be used as it stands, and that the result is our reading of the author's intent rather than his text. Anyone who prefers the printed text can find both versions in the Lean code: the printed one under its original name, the C's version with a `C` suffix (for example `MvWord` and `MvWordC`).
+
+**Policy when the convention has changed.** Where practice has changed since 1990, and neither the printed specification nor the C matches what users now expect, we follow current practice. Such a decision is marked **★ modern convention**, and its section says what the specification and the C each do, so the departure from both is on record.
 
 ### D1. What a line is
 
@@ -160,6 +166,30 @@ From "ca|t" it moves to "|cat". `LeftMoveLine_Doc1` does the same for lines.
 - Perhaps the author meant word and line moves to be used only at word or line boundaries. But nothing in the specification restricts the cursor in that way. Character moves put it inside words, and §1.6 calls these operations total. The C moves from anywhere.
 
 **Decision.** Use the C's behaviour. A word move keeps the characters unchanged (`Ξ_Cont Doc1`), requires `Left_Word ≠ ⟨⟩`, and sets `Left_Word′ = front Left_Word`; the same for lines. These are `MvWordC` and `MvLineC` in `ZEditor/Spec/Doc1.lean`. Lean proves that this gives the C's result ("ca|t" to "|cat", `leftMvWordC_caT`), and that with it all fifteen operations of §1.6 are total (`LeftMoveWordC_Doc1_total` and the others in `ZEditor/Spec/Total.lean`).
+
+### D4. The newline at the end of a file
+
+*Finding 4c. Decided 2026-10-31: keep the final newline, as editors do today.*
+
+> **★ This decision follows current practice, not the printed specification or the C.**
+>
+> The specification leaves it open whether a document keeps its final newline (and only in one case); the C removes it. Today a text file ends with a newline by convention, so we keep it.
+
+**Background.** Doc3 (§3.1, printed p.76) forbids empty lines at the end of the document, because on a 1990 terminal they cannot be seen. After every key the tidying operation `RemTrailNL` removes them. In the specification's model of lines, a file that ends with a newline, `abc⏎`, is two lines: `abc` and an empty one. So the final newline *is* an empty line at the end.
+
+**What the specification says.** The rule (`visibleseq`, applied to the lines below the cursor) makes one exception: if *every* line below the cursor is empty, one may remain. So the final newline *may* survive, but only while the cursor is on the last line of text, and even then the specification leaves the choice open. With the cursor anywhere higher, as in `abc⏎def⏎` with the cursor on `abc`, the empty last line must go. (An earlier note in this project said the printed rule keeps the final newline; it does so only in that one case.)
+
+**What the C does.** Its `RemTrailNL` removes every empty line at the end, so `abc⏎` becomes `abc` after the first key. Our first prototype copied this, and so opening a file, pressing → once and saving deleted its final newline.
+
+**Why it matters now.** In 1990 this looked like tidiness. Today a file ending in a newline is the standard convention (POSIX defines a line as ending in a newline). Removing it makes `wc -l` count one line fewer, makes git report "No newline at end of file", and trips up tools that read the last line.
+
+**Decision.** At most one empty line may remain at the end of the document: the final newline is kept wherever the cursor is, and any further empty lines at the end are still tidied away. A file that did not end with a newline is left as it is (adding one on save, as vim and nano do, would be a separate decision).
+
+**Evidence.**
+- The Doc3 proof obligation still holds with the changed rule. Checked exhaustively: no failures in 2,639 states, from all documents of up to 6 characters, for all operations (`Check.lean`, `failuresD4`).
+- The tidying never removes a final newline that an operation left in place: 0 cases with the new rule, against 10,013 (state, key) cases with the C's rule (`finalNewlineLostD4`, `finalNewlineLostC`).
+- On the running editor: `tests/final_newline.sh` (four cases, including the cursor above the end of the document).
+- In the editor's code: `keepFinalNewline` in `ZEditor/Impl/Editor.lean`. The Lean specification (`Doc3.lean`) still states the printed rule; it will be changed when the editor is proved against the corrected specification.
 
 ## Readings to confirm by eye
 

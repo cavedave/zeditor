@@ -73,7 +73,7 @@ Plain Lean 4 (toolchain in `lean-toolchain`), no Mathlib. Build with `lake build
 
 ## What the formalisation found
 
-All findings are tracked in [`FINDINGS.md`](FINDINGS.md), one row each, with severity, evidence, what the C does, and a Decision column. Decisions on what to do about them are deliberately left until the whole specification has been worked through.
+Every place where the C and the Z disagree is gathered in [`c_vs_z.md`](c_vs_z.md). Behaviour the monograph never states, and what happens when it is stated and checked, is in [`issues_notdefined.md`](issues_notdefined.md). All findings are tracked in [`FINDINGS.md`](FINDINGS.md), one row each, with severity, evidence, what the C does, and a Decision column. Decisions on what to do about them are deliberately left until the whole specification has been worked through.
 
 Writing the specification in Lean, where every definition must type-check and every claim must be proved, exposed problems in the printed Z that the book's own semi-formal proofs did not catch. Each one is backed by a theorem in `ZEditor/Doc1.lean`.
 
@@ -224,13 +224,37 @@ It can also run a script of keys and print the resulting screen, which is how it
 
 where `script.txt` has one key per line: `type some text`, or a key name (`Enter`, `Tab`, `Backspace`, `Delete`, `Left`, `Right`, `Up`, `Down`, `Save`).
 
-Tests: `sh tests/save.sh` checks that saving writes exactly the document's text and nothing else.
+Tests: `sh tests/save.sh` checks that saving writes exactly the document's text and nothing else; `sh tests/final_newline.sh` checks that a file keeps its final newline (decision D4).
 
 Note for macOS Terminal: save with **Ctrl-S**, not **⌘S**. Terminal catches ⌘S itself and saves its whole window (as "Terminal Saved Output.txt"), before the editor sees the key.
 
 **A lesson from first use.** The first time the editor was tried, ⌘S was pressed to save, out of habit from every other Mac application. Terminal saved its own window instead, including the earlier shell history, and it looked as though the editor had saved far more than the document. A terminal program can never receive ⌘ keys: Terminal keeps them for itself. Ctrl-S was the convention of 1990 terminals (and of Neilson's era); ⌘S is the convention users now expect. The status line names Ctrl-S for this reason, but the mismatch remains a real usability hazard for any terminal editor on a Mac.
 
 The prototype is `Main.lean` (the terminal) and `ZEditor/Impl/Editor.lean` (the editor itself, with no input or output). Every key is followed by the specification's tidying operations, so trailing spaces vanish when you leave a line, and moving the cursor past the end of the text pads the document as Doc4 specifies. The operations are not yet proved to meet the specification; that comes next. `ZEditor/Demo.lean` is a scripted demonstration run inside Lean (`lake env lean ZEditor/Demo.lean`).
+
+## Tests, and how they settled ambiguities
+
+Run everything with
+
+    sh tests/run_all.sh
+
+There are four kinds of test, and each was written to answer a question about what the specification *means*, not just to catch mistakes:
+
+| Kind | Where | What it settled |
+|---|---|---|
+| **Proofs** | `ZEditor/Spec/`, `ZEditor/Claims.lean` (run by `lake build`) | Whether an operation is stuck, unconstrained or contradictory as printed; whether a claim the monograph never makes holds |
+| **Exhaustive checks** | `ZEditor/Check.lean`, with its results recorded as `#guard` assertions | That finding 5 is the *only* way the cursor moves get stuck (442 cases up to 6 characters, all → after a trailing space); that decision D4 keeps the Doc3 invariant (2,639 states) and never loses a final newline, where the C's rule loses it in 10,013 cases |
+| **Editor tests** | `tests/save.sh`, `tests/final_newline.sh` | That saving writes exactly the document (prompted by a mix-up between Ctrl-S and Terminal's own ⌘S); that the final newline survives (D4) |
+| **The demonstration** | `ZEditor/Demo.lean` | Showed, by running it, that word moves treat a run of spaces as a word |
+
+The story worth telling is that the specification could not be understood by reading alone. Several of its ambiguities only became questions with a yes-or-no answer once something was run or proved:
+
+- **Stating a claim and trying to prove it** found finding 6e, an ambiguity in how the mark is represented, and it found it in *our own* first correction, which had looked right.
+- **Trying the running editor** found N1 and N2 (spaces silently deleted), which the specification and the C both do, and which reading neither had revealed.
+- **An exhaustive check** turned "is → after a space a special case?" into "it is the only case, 442 times out of 442".
+- **A failing check refined a question**: the first test for D4 reported 576 "lost" final newlines, every one of them a user typing after the newline. The question became the sharper one the decision actually needed.
+
+The tests are kept so that every decision can be rechecked whenever the specification or the editor changes.
 
 ## From the C to a Lean editor
 
@@ -267,6 +291,8 @@ Three things make the Lean editor simpler to follow than the C:
 So the design is Neilson's, without the parts that existed only because 1990 terminals were slow.
 
 ## Status and plan
+
+What is done is listed here; what is still to do is in [`TODO.md`](TODO.md).
 
 - [x] Doc1 translated (`ZEditor/Spec/Doc1.lean`): states, all operations, error cases, the total operations
 - [x] Problems 1–3 above proved
