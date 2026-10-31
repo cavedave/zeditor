@@ -163,7 +163,7 @@ runnable editor's operations, which follow the specification's tidying. -/
 
 open ZEditor.Impl in
 theorem step_back_deletes_space :
-    tidy 2 ((leftMoveChar ("a ".toList, [])).getD ([], [])) = ("a".toList, []) := by
+    tidy false 2 ((leftMoveChar ("a ".toList, [])).getD ([], [])) = ("a".toList, []) := by
   decide
 
 /-! ## Claim: Enter then Backspace gives back the text
@@ -175,8 +175,8 @@ space between two words is lost. The C does the same. -/
 open ZEditor.Impl in
 theorem enter_backspace_loses_space :
     let c₀ : Chars := ("ab ".toList, "cd".toList)
-    let c₁ := tidy 3 ((insertChar nl c₀).getD c₀)
-    tidy c₁.1.length ((leftDeleteChar c₁).getD c₁) = ("ab".toList, "cd".toList) := by
+    let c₁ := tidy false 3 ((insertChar nl c₀).getD c₀)
+    tidy false c₁.1.length ((leftDeleteChar c₁).getD c₁) = ("ab".toList, "cd".toList) := by
   decide
 
 end ZEditor.Claims

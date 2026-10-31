@@ -19,6 +19,31 @@ namespace ZEditor.Impl
 
 open ZEditor
 
+/-! ## Editions
+
+The project builds two editions from one core. The **1990 edition** does what
+the specification says, repaired only where the specification is broken, and
+takes the C's choices wherever the specification leaves one open. The **2026
+edition** adds improvements we have chosen. See "Two editions" in `README.md`. -/
+
+structure Edition where
+  name : String
+  /-- Keep a file's final newline (decision D4: the 2026 edition does; the
+  1990 edition removes it, as the C does). -/
+  keepFinalNewline : Bool
+  /-- A tab inserts spaces to the next multiple of this (the C's `tabstop` is 8). -/
+  tabWidth : Nat
+  /-- Quit with unsaved changes: the 1990 edition saves then quits, as the
+  specification's Quit and the C do; the 2026 edition asks for Quit to be
+  pressed twice instead. -/
+  quitAsks : Bool
+
+def edition1990 : Edition :=
+  { name := "1990", keepFinalNewline := false, tabWidth := 8, quitAsks := false }
+
+def edition2026 : Edition :=
+  { name := "2026", keepFinalNewline := true, tabWidth := 8, quitAsks := true }
+
 /-- A document: the characters left and right of the cursor (`Left_Char`,
 `Right_Char`). -/
 abbrev Chars := List Char × List Char
@@ -51,15 +76,17 @@ def keepFinalNewline (B : List (List Char)) : List (List Char) :=
   if s.length < B.length then s ++ [[]] else s
 
 /-- `RemTrailNL`: remove empty lines at the end of the document, below the
-cursor, keeping at most one, so that a final newline survives (decision D4). The
-printed specification allows one to remain only when every line below the cursor
-is empty; the C removes them all. -/
-def remTrailNL (c : Chars) : Chars :=
+cursor. The 1990 edition removes them all, as the C does (the specification
+allows this). The 2026 edition keeps one, so that a file's final newline
+survives (decision D4). -/
+def remTrailNL (keepFinal : Bool) (c : Chars) : Chars :=
   let (L, x, y) := display c
-  ofDisplay (L.take y ++ keepFinalNewline (L.drop y)) x y
+  let below := if keepFinal then keepFinalNewline (L.drop y) else stripNull (L.drop y)
+  ofDisplay (L.take y ++ below) x y
 
 /-- The Doc3 promotion: an operation is followed by `RemTrailWS ; RemTrailNL`. -/
-def tidy (prevCP : Nat) (c : Chars) : Chars := remTrailNL (remTrailWS prevCP c)
+def tidy (keepFinal : Bool) (prevCP : Nat) (c : Chars) : Chars :=
+  remTrailNL keepFinal (remTrailWS prevCP c)
 
 /-! ## Operations
 
@@ -69,11 +96,11 @@ where the document does not change. -/
 /-- `InsertChar` (not tab). -/
 def insertChar (ch : Char) (c : Chars) : Option Chars := some (c.1 ++ [ch], c.2)
 
-/-- `InsertChar` of a tab: spaces to the next multiple of 4 columns (`InsTab`
-allows any positive number). -/
-def insertTab (c : Chars) : Option Chars :=
+/-- `InsertChar` of a tab: spaces to the next tab stop (`InsTab` allows any
+positive number; the C uses stops every 8 columns, `tabstop`). -/
+def insertTab (width : Nat) (c : Chars) : Option Chars :=
   let (_, x, _) := display c
-  some (c.1 ++ List.replicate (4 - (x - 1) % 4) sp, c.2)
+  some (c.1 ++ List.replicate (width - (x - 1) % width) sp, c.2)
 
 /-- `LeftDeleteChar` (Backspace). -/
 def leftDeleteChar (c : Chars) : Option Chars :=
@@ -119,6 +146,7 @@ def cursorDown (c : Chars) : Option Chars :=
 /-! ## The editor -/
 
 structure Editor where
+  edition  : Edition
   doc      : Chars
   offsetX  : Nat := 0
   offsetY  : Nat := 0
@@ -169,7 +197,7 @@ def Editor.applyKind (e : Editor) (op : Chars → Option Chars) (edit : Bool) : 
   match op e.doc with
   | some d₁ =>
     let d₂ := remTrailWS e.doc.1.length d₁
-    let d₃ := remTrailNL d₂
+    let d₃ := remTrailNL e.edition.keepFinalNewline d₂
     let content (c : Chars) := c.1 ++ c.2
     -- An edit clears the mark, as the specification (`ResetMark`, §5.1.1) and the C
     -- (`Update_Doc6`, which sets `MP = −1`) both do. Emacs instead keeps the mark
@@ -260,7 +288,7 @@ def Editor.status (e : Editor) : String :=
     | none => if e.mark.isSome then "  [mark set]" else ""
   let msg := if e.message.isEmpty then "Ctrl-S save  Ctrl-Q quit" else e.message
   let msg := markInfo ++ "  " ++ msg
-  s!" zeditor  {name}  line {y}, col {x}  {msg}"
+  s!" zeditor {e.edition.name}  {name}  line {y}, col {x}  {msg}"
 
 /-! ## Keys -/
 
@@ -277,7 +305,7 @@ which owns the file system; here they only set messages. -/
 def Editor.press (e : Editor) : Key → Editor
   | .char ch => e.apply (insertChar ch)
   | .enter => e.apply (insertChar nl)
-  | .tab => e.apply insertTab
+  | .tab => e.apply (insertTab e.edition.tabWidth)
   | .backspace => e.apply leftDeleteChar
   | .delete => e.apply rightDeleteChar
   | .left => e.move leftMoveChar
@@ -291,7 +319,7 @@ def Editor.press (e : Editor) : Key → Editor
   | .save | .quit | .other => e
 
 /-- Open a document: the cursor at the top. -/
-def Editor.open (file : String) (text : List Char) : Editor :=
-  { doc := ([], text), file, saved := text }
+def Editor.open (edition : Edition) (file : String) (text : List Char) : Editor :=
+  { edition, doc := ([], text), file, saved := text }
 
 end ZEditor.Impl

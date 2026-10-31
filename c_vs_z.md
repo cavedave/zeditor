@@ -61,8 +61,8 @@ The specification deliberately allows several outcomes; the C picks one. Not dis
 
 | # | Choice | The Z allows | The C chooses | Our editor |
 |---|---|---|---|---|
-| C1 | Empty lines at the end of the document | removing them, or keeping one (in one case) | removes them all, including a file's final newline | keeps the final newline (D4, ★ modern convention) |
-| C2 | Tab width | any positive number of spaces | to the next multiple of 8 (`tabstop`) | to the next multiple of 4 |
+| C1 | Empty lines at the end of the document | removing them, or keeping one (in one case) | removes them all, including a file's final newline | 1990 edition: the same; 2026 edition: keeps the final newline (D4) |
+| C2 | Tab width | any positive number of spaces | to the next multiple of 8 (`tabstop`) | the same |
 | C3 | Padding when the cursor moves past the text | any amount of padding (finding 5b) | exactly enough | exactly enough |
 | C4 | When the window scrolls | any window that contains the cursor | redraws only when no key is waiting; scroll and pan rules | keep the window while the cursor is in it, else move just enough |
 | C5 | The mark after a cursor move | anywhere (finding 6d) | adjusted for spaces and newlines added or removed (`Update_Doc6`, p.viii) | the same, as the C (decision D5) |

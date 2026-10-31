@@ -201,14 +201,51 @@ theorem centreWindow_height_one (h1 : P.winHeight = 1) (d : Doc9 P) :
     omega
   · omega
 
-/-! ### Decision D8: centre on the true middle line
+/-! ### Decision D8, 1990 edition: the smallest repair
+
+The 1990 edition keeps the book's `WinHeight / 2` and repairs only the case where
+it is broken: a one-line window, where it would be line 0. -/
+
+/-- `WinHeight / 2`, but at least 1. -/
+def HalfWinHeight1 : Nat := max 1 (P.winHeight / 2)
+
+theorem HalfWinHeight1_range : 1 ≤ HalfWinHeight1 P ∧ HalfWinHeight1 P ≤ P.winHeight := by
+  have := P.winHeight_pos; unfold HalfWinHeight1; omega
+
+/-- It is the book's value for every window of two or more lines. -/
+theorem HalfWinHeight1_eq (h : 2 ≤ P.winHeight) : HalfWinHeight1 P = HalfWinHeight P := by
+  unfold HalfWinHeight1 HalfWinHeight; omega
+
+def CenWin1 (d d' : Doc9 P) : Prop :=
+  d'.toDoc8 = d.toDoc8 ∧ d.udCurY ≥ HalfWinHeight1 P ∧ d'.offsetX = d.offsetX ∧
+  d'.offsetY = d.udCurY - HalfWinHeight1 P
+
+def ErrorTooNearTop1 (d d' : Doc9 P) (rep : Report) : Prop :=
+  d' = d ∧ d.udCurY < HalfWinHeight1 P ∧ rep = "Too near top of document"
+
+def CentreWindow1_Doc9 (d d' : Doc9 P) (rep : Report) : Prop :=
+  (CenWin1 P d d' ∧ Success rep) ∨ ErrorTooNearTop1 P d d' rep
+
+/-- **With the smallest repair, centring has an outcome for every window height.** -/
+theorem CentreWindow1_Doc9_total (d : Doc9 P) : ∃ d' rep, CentreWindow1_Doc9 P d d' rep := by
+  by_cases hy : d.udCurY < HalfWinHeight1 P
+  · exact ⟨d, _, .inr ⟨rfl, hy, rfl⟩⟩
+  · have hw := d.inWindow
+    unfold InWindow at hw
+    have hh := HalfWinHeight1_range P
+    have hin : InWindow P d.toDoc8 d.offsetX (d.udCurY - HalfWinHeight1 P) := by
+      unfold InWindow; omega
+    exact ⟨Doc9.make P d.toDoc8 _ _ hin, _, .inl ⟨⟨rfl, by omega, rfl, rfl⟩, rfl⟩⟩
+
+/-! ### Decision D8, 2026 edition: centre on the true middle line
 
 The printed `HalfWinHeight = WinHeight / 2` is 0 for a one-line window, where
 centring then has no outcome (`centreWindow_height_one`), and for odd heights it
 is not the middle (for a 3-line window it is line 1). Decision D8 uses the true
 middle line, `(WinHeight + 1) / 2`: the same as the book for every even height,
 the true middle for odd heights, and at least 1 for every height. One-line
-windows matter because terminals now resize (★ modern convention). -/
+windows matter because terminals now resize. This is the 2026 edition; the 1990
+edition uses `HalfWinHeight1` above. -/
 
 /-- The middle line of the window (decision D8). -/
 def MidWinHeight : Nat := (P.winHeight + 1) / 2

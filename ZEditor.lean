@@ -11,3 +11,5 @@ import ZEditor.Spec.Doc8
 import ZEditor.Spec.Doc9
 import ZEditor.Impl.Editor
 import ZEditor.Claims
+import ZEditor.Spec.FollowC
+import ZEditor.App

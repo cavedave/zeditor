@@ -9,16 +9,14 @@ The working list. Finished items move to the status list in `README.md`.
 - [x] D3 word and line moves, following the C (finding 3)
 - [ ] One short write-up for the ill-formed and minor findings: 4a, 4b, 4d (deferred for now)
 - [ ] The real choices, which change how the editor behaves:
-  - [x] 4c: the final newline is kept (decision D4, ★ modern convention)
-  - [ ] Follow-up to D4: add a final newline on save if a file lacks one, as vim and nano do?
+  - [x] 4c: 1990 edition removes empty lines at the end, as the C; 2026 edition keeps the final newline (decision D4)
   - [x] 6a–6e: the mark is a position, as in the C (decision D5); edits clear it, moves keep it on the same text
-  - [ ] Follow-up to D5: keep the mark through edits, as Emacs does?
   - [x] 7f: a changed flag, as the C's `DocChanged` (decision D6)
   - [x] 7h: the real file system, as the C (decision D7) — **to discuss**: what the specification should say about files
-  - [x] 9b: centre on the true middle line, `(WinHeight + 1) / 2` (decision D8, ★ modern convention)
-- [ ] The design findings found by stating claims: N1 (moving deletes a space), N2 (Enter then Backspace loses a space), N3 (nothing is required to succeed)
-- [ ] The remaining "follow the C" findings: 5, 7a, 7b, 7c, 7d, 8a, 8b, 8c, 8d
-- [ ] The frame finding 7e (errors change nothing), and the ill-formed/minor 5b, 7g, 8e, 9a, 9c
+  - [x] 9b: 1990 edition `max 1 (WinHeight/2)`; 2026 edition the true middle line (decision D8)
+- [x] N1, N2, N3: keep what the specification asks for (decision D10)
+- [x] The "follow the C" findings 5, 7a–7e, 8a–8d (decision D9; Lean in `ZEditor/Spec/FollowC.lean`)
+- [ ] The ill-formed/minor findings in one short write-up: 4a, 4b, 4d, 5b, 7g, 8e, 9a, 9c
 
 ## The editor: a minimum viable product
 
@@ -29,11 +27,24 @@ The working list. Finished items move to the status list in `README.md`.
 - [ ] Show the marked text on screen (highlight)
 - [ ] Search and Replace
 - [ ] Quoted commands: save as, write, append, input, move to line, escape to the shell
-- [ ] Centre the window (using `MidWinHeight`, decision D8)
+- [ ] Centre the window (1990: `HalfWinHeight1`; 2026: `MidWinHeight`; decision D8)
 - [ ] Characters beyond ASCII (UTF-8 input)
 - [ ] Terminal resizing (the specification assumes a fixed window size)
 - [ ] Prove the editor's operations meet the corrected specification (refinement)
 - [ ] Change the Lean specification's Doc3 invariant to decision D4 (at most one empty line at the end), and Doc5/Doc6 to decision D5 (the mark as a position)
+
+## The 2026 edition
+
+Improvements that belong in the 2026 edition only (the 1990 edition does what the specification says):
+
+- [x] Keep a file's final newline (D4)
+- [x] Quit with unsaved changes asks rather than saving
+- [ ] Centre on the true middle line (D8; specified and proved, not yet in the editor)
+- [ ] Add a final newline on save if a file lacks one, as vim and nano do
+- [ ] Keep the mark through edits, shifting it, as Emacs does (D5)
+- [ ] Relax the trailing-space rule so that a space the user typed stays (N1, N2): tidy on save, or not at all
+- [ ] Undo and redo; crash recovery (as the C's `~/fred.save`); characters beyond ASCII; terminal resizing; soft line wrap
+- [ ] The security fixes S1 and S2 (below); arguably these belong in the 1990 edition too, since the C discarded control characters
 
 ## After the MVP
 

@@ -55,10 +55,12 @@ zeditor/
   ZEditor/Spec/Doc7.lean   -- §6: the quote buffer, operating-system I/O, quoted commands
   ZEditor/Spec/Doc8.lean   -- §7: search and replace
   ZEditor/Spec/Doc9.lean   -- §8: the window onto the display (the complete editor)
+  ZEditor/Spec/FollowC.lean -- the readings that follow the C (decision D9)
   ZEditor/Check.lean    -- exhaustive computational checks of the Doc3 and Doc4 proof obligations
   ZEditor/Demo.lean     -- a scripted demonstration
   ZEditor/Impl/Editor.lean -- the runnable editor's core
-  Main.lean             -- the terminal program
+  ZEditor/App.lean      -- the terminal program, for either edition
+  Main.lean, Main2026.lean -- the 1990 and 2026 editions
 ```
 
 Plain Lean 4 (toolchain in `lean-toolchain`), no Mathlib. Build with `lake build`. `Check.lean` is not part of the build; run it with `lake env lean ZEditor/Check.lean`.
@@ -209,14 +211,32 @@ The C program is not the specification, but it is useful in two ways:
 1. **It shows intent where the Z is wrong or ambiguous**, as with word movement above.
 2. **It is a refinement to verify.** The C stores the document in a gap buffer (`Arr`, with indices `LP`, `RP`, `CP`), and Part Four gives the relation between that representation and the Z state. Writing the gap buffer in Lean and proving each C function satisfies its Z operation would make the book's method fully formal.
 
+## Two editions
+
+This project is about **spec-based development**: building software from a specification. So the main edition does what the specification says, even where that now looks wrong, and is repaired only where the specification itself is broken. Improvements belong to a second edition. Both are built from the same code.
+
+| | The 1990 edition (`zeditor`) | The 2026 edition (`zeditor2026`) |
+|---|---|---|
+| Aim | the editor the specification describes | the same, with chosen improvements |
+| Where the specification and the C agree | do what they say, even if it looks wrong today (D10) | the same, for now |
+| Where the specification is broken | follow the C (D3, D5, D6, D9) | the same |
+| Where the specification leaves a choice | take the C's choice | may differ |
+| A file's final newline | removed, as the C does (D4) | kept (D4) |
+| Centring the window | the book's `WinHeight / 2`, repaired for one-line windows (D8) | the true middle line (D8) |
+| Quit with unsaved changes | saves, then quits (the specification and the C) | asks for Ctrl-Q twice, does not save |
+| Tab stops | every 8 columns (the C) | every 8 columns |
+
+The rules for each decision are set out in `FINDINGS.md` ("The principle"). Ideas for the 2026 edition are listed in `TODO.md`.
+
 ## Running the editor
 
-A first prototype runs as a full-screen terminal editor:
+A first prototype runs as a full-screen terminal editor, in two editions:
 
     lake build
-    .lake/build/bin/zeditor notes.txt
+    .lake/build/bin/zeditor notes.txt        # the 1990 edition
+    .lake/build/bin/zeditor2026 notes.txt    # the 2026 edition
 
-Typing inserts text; Enter, Tab, Backspace, Delete and the arrow keys work; **Ctrl-Space** sets the mark, **Ctrl-C** copies the marked text, **Ctrl-X** cuts it and **Ctrl-V** pastes; **Ctrl-S** saves and **Ctrl-Q** quits (press it twice if there are unsaved changes). The status line at the bottom shows the file, whether it has unsaved changes, and the cursor position.
+Typing inserts text; Enter, Tab, Backspace, Delete and the arrow keys work; **Ctrl-Space** sets the mark, **Ctrl-C** copies the marked text, **Ctrl-X** cuts it and **Ctrl-V** pastes; **Ctrl-S** saves and **Ctrl-Q** quits. With unsaved changes, the 1990 edition saves and then quits, as the specification's Quit and the C do; the 2026 edition asks for Ctrl-Q to be pressed twice. The status line at the bottom shows the file, whether it has unsaved changes, and the cursor position.
 
 It can also run a script of keys and print the resulting screen, which is how it is tested:
 
@@ -244,7 +264,7 @@ There are four kinds of test, and each was written to answer a question about wh
 |---|---|---|
 | **Proofs** | `ZEditor/Spec/`, `ZEditor/Claims.lean` (run by `lake build`) | Whether an operation is stuck, unconstrained or contradictory as printed; whether a claim the monograph never makes holds |
 | **Exhaustive checks** | `ZEditor/Check.lean`, with its results recorded as `#guard` assertions | That finding 5 is the *only* way the cursor moves get stuck (442 cases up to 6 characters, all → after a trailing space); that decision D4 keeps the Doc3 invariant (2,639 states) and never loses a final newline, where the C's rule loses it in 10,013 cases |
-| **Editor tests** | `tests/save.sh`, `tests/final_newline.sh`, `tests/mark.sh` | That saving writes exactly the document (prompted by a mix-up between Ctrl-S and Terminal's own ⌘S); that the final newline survives (D4); that the mark behaves as decided, one case per finding fixed (D5) |
+| **Editor tests** | `tests/save.sh`, `tests/final_newline.sh` (both editions), `tests/mark.sh`, `tests/changed.sh`, `tests/quit.sh` (both editions), `tests/tab.sh` | That saving writes exactly the document (prompted by a mix-up between Ctrl-S and Terminal's own ⌘S); that the final newline survives (D4); that the mark behaves as decided, one case per finding fixed (D5) |
 | **The demonstration** | `ZEditor/Demo.lean` | Showed, by running it, that word moves treat a run of spaces as a word |
 
 The story worth telling is that the specification could not be understood by reading alone. Several of its ambiguities only became questions with a yes-or-no answer once something was run or proved:
